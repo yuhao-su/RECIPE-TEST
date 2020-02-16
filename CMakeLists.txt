@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 2.8)
 project(RECIPE)
 
-# set(CMAKE_CXX_COMPILER "icpc")
-# set(CMAKE_C_COMPILER "icc")
+set(CMAKE_CXX_COMPILER "clang")
+set(CMAKE_C_COMPILER "clang++")
 if( NOT CMAKE_BUILD_TYPE )
     message(STATUS "No build type selected, default to Release")
     set( CMAKE_BUILD_TYPE Release)

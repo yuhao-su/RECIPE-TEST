@@ -30,13 +30,15 @@ LevelHashing::LevelHashing(void){
 
 LevelHashing::~LevelHashing(void){
   delete [] mutex;
-  delete [] buckets;
+  delete [] buckets[0];
+  delete [] buckets[1];
+
 }
 
 LevelHashing::LevelHashing(size_t _levels)
   : levels{_levels},
-  addr_capacity{pow(2, levels)},
-  total_capacity{pow(2, levels) + pow(2, levels-1)},
+  addr_capacity{(uint64_t)pow(2, levels)},
+  total_capacity{(uint64_t)pow(2, levels) + pow(2, levels-1)},
   resize_num{0}
 {
   locksize = 256;
