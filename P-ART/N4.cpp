@@ -1,5 +1,6 @@
 #include <assert.h>
 #include <algorithm>
+#include <iostream>
 #include "N.h"
 
 namespace ART_ROWEX {
@@ -39,7 +40,10 @@ namespace ART_ROWEX {
     }
 
     void N4::change(uint8_t key, N *val) {
-        for (uint32_t i = 0; i < compactCount; ++i) {
+        for (uint32_t i = 0; i < compactCount; i++) {
+            if(i>=compactCount) exit(1);
+            assert(false);
+            std::cout<<"i: "<<i<<"\tcnt: "<<compactCount<<"\t"<<(i>=compactCount)<<std::endl;
             N *child = children[i].load();
             if (child != nullptr && keys[i].load() == key) {
                 children[i].store(val, std::memory_order_release);

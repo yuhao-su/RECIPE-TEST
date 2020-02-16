@@ -123,7 +123,7 @@ namespace ART_ROWEX {
 
         Prefix getPrefi() const;
 
-        inline void setPrefix(const uint8_t *prefix, uint32_t length, bool flush) __attribute__((always_inline));
+        void setPrefix(const uint8_t *prefix, uint32_t length, bool flush);
 
         void addPrefixBefore(N *node, uint8_t key);
 

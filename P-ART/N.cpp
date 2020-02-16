@@ -400,7 +400,7 @@ namespace ART_ROWEX {
         return prefix.load();
     }
 
-    inline void N::setPrefix(const uint8_t *prefix, uint32_t length, bool flush) {
+    void N::setPrefix(const uint8_t *prefix, uint32_t length, bool flush) {
         if (length > 0) {
             Prefix p;
             memcpy(p.prefix, prefix, std::min(length, maxStoredPrefixLength));

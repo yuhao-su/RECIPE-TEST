@@ -43,7 +43,7 @@ static unsigned long CPU_FREQ_MHZ = 2100;
 
 static inline void cpu_pause()
 {
-	__asm__ volatile ("pause" ::: "memory");
+	// __asm__ volatile ("pause" ::: "memory");
 }
 
 static inline unsigned long read_tsc(void)
@@ -58,42 +58,42 @@ static inline unsigned long read_tsc(void)
 }
 
 static inline void mfence() {
-    asm volatile("mfence" ::: "memory");
+    // asm volatile("mfence" ::: "memory");
 }
 
 static inline void flush_buffer(void *buf, unsigned long len, bool fence)
 {
-	unsigned long i, etsc;
-	len = len + ((unsigned long)(buf) & (CACHE_LINE_SIZE - 1));
-	if (fence) {
-		mfence();
-		for (i = 0; i < len; i += CACHE_LINE_SIZE) {
-			etsc = read_tsc() + (unsigned long)(LATENCY * CPU_FREQ_MHZ / 1000);
-#ifdef CLFLUSH
-            asm volatile("clflush %0" : "+m" (*(volatile char *)(buf+i)));
-#elif CLFLUSH_OPT
-            asm volatile(".byte 0x66; clflush %0" : "+m" (*(volatile char *)(buf+i)));
-#elif CLWB
-            asm volatile(".byte 0x66; xsaveopt %0" : "+m" (*(volatile char *)(buf+i)));
-#endif
-            while (read_tsc() < etsc)
-				cpu_pause();
-		}
-		mfence();
-	} else {
-		for (i = 0; i < len; i += CACHE_LINE_SIZE) {
-            etsc = read_tsc() + (unsigned long)(LATENCY * CPU_FREQ_MHZ / 1000);
-#ifdef CLFLUSH
-            asm volatile("clflush %0" : "+m" (*(volatile char *)(buf+i)));
-#elif CLFLUSH_OPT
-            asm volatile(".byte 0x66; clflush %0" : "+m" (*(volatile char *)(buf+i)));
-#elif CLWB
-            asm volatile(".byte 0x66; xsaveopt %0" : "+m" (*(volatile char *)(buf+i)));
-#endif
-            while (read_tsc() < etsc)
-                cpu_pause();
-		}
-	}
+// 	unsigned long i, etsc;
+// 	len = len + ((unsigned long)(buf) & (CACHE_LINE_SIZE - 1));
+// 	if (fence) {
+// 		mfence();
+// 		for (i = 0; i < len; i += CACHE_LINE_SIZE) {
+// 			etsc = read_tsc() + (unsigned long)(LATENCY * CPU_FREQ_MHZ / 1000);
+// #ifdef CLFLUSH
+//             asm volatile("clflush %0" : "+m" (*(volatile char *)(buf+i)));
+// #elif CLFLUSH_OPT
+//             asm volatile(".byte 0x66; clflush %0" : "+m" (*(volatile char *)(buf+i)));
+// #elif CLWB
+//             asm volatile(".byte 0x66; xsaveopt %0" : "+m" (*(volatile char *)(buf+i)));
+// #endif
+//             while (read_tsc() < etsc)
+// 				cpu_pause();
+// 		}
+// 		mfence();
+// 	} else {
+// 		for (i = 0; i < len; i += CACHE_LINE_SIZE) {
+//             etsc = read_tsc() + (unsigned long)(LATENCY * CPU_FREQ_MHZ / 1000);
+// #ifdef CLFLUSH
+//             asm volatile("clflush %0" : "+m" (*(volatile char *)(buf+i)));
+// #elif CLFLUSH_OPT
+//             asm volatile(".byte 0x66; clflush %0" : "+m" (*(volatile char *)(buf+i)));
+// #elif CLWB
+//             asm volatile(".byte 0x66; xsaveopt %0" : "+m" (*(volatile char *)(buf+i)));
+// #endif
+//             while (read_tsc() < etsc)
+//                 cpu_pause();
+// 		}
+// 	}
 }
 
 static inline unsigned long __ffs(unsigned long word)
@@ -938,7 +938,7 @@ RECURSE_SEARCH:;
  * the old value pointer is returned.
  */
 void* woart_insert(woart_tree *t, const unsigned long key, int key_len, void *value) {
-    std::unique_lock<std::shared_mutex> lock(mutex);
+    // std::unique_lock<std::shared_mutex> lock(mutex);
 	int old_val = 0;
 	void *old = recursive_insert(t->root, &t->root, key, key_len, value, 0, &old_val);
 	if (!old_val) t->size++;

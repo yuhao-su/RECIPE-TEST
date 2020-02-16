@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 2.8)
 project(RECIPE)
 
+# set(CMAKE_CXX_COMPILER "icpc")
+# set(CMAKE_C_COMPILER "icc")
 if( NOT CMAKE_BUILD_TYPE )
     message(STATUS "No build type selected, default to Release")
     set( CMAKE_BUILD_TYPE Release)
@@ -8,7 +10,7 @@ else()
     message(STATUS "Build type is set to ${CMAKE_BUILD_TYPE}")
 endif()
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -march=native -mrtm -mcx16 -mavx -mavx2 -mbmi2 -mlzcnt -Wno-deprecated-declarations -Wall -Wextra -fno-builtin-malloc -fno-builtin-calloc -fno-builtin-realloc -fno-builtin-free -faligned-new=64 -DNDEBUG")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -g -march=native -mrtm -mcx16 -mavx -mavx2 -mbmi2 -mlzcnt -Wno-deprecated-declarations -Wall -Wextra -fno-builtin-malloc -fno-builtin-calloc -fno-builtin-realloc -fno-builtin-free -faligned-new=64 ")#-DNDEBUG
 
 execute_process(COMMAND cat /proc/cpuinfo COMMAND grep clflush OUTPUT_VARIABLE ENABLE_CLFLUSH)
 execute_process(COMMAND cat /proc/cpuinfo COMMAND grep clflushopt OUTPUT_VARIABLE ENABLE_CLFLUSHOPT)
@@ -91,12 +93,14 @@ find_package (Threads)
 
 if (HOT)
 set(INDEX_FILES P-ART/Tree.cpp third-party/FAST_FAIR/btree.h
+    third-party/libart/src/art.c
     P-HOT/libs/hot/rowex/include/hot/rowex/HOTRowex.hpp third-party/CCEH/src/CCEH_MSB.cpp
     third-party/CCEH/src/Level_hashing.cpp P-BwTree/src/bwtree.cpp
     third-party/WOART/woart.cpp P-CLHT/src/clht_lb_res.c P-CLHT/src/clht_gc.c
     P-CLHT/external/sspfd/sspfd.c P-CLHT/external/ssmem/src/ssmem.c)
 else()
 set(INDEX_FILES P-ART/Tree.cpp third-party/FAST_FAIR/btree.h third-party/CCEH/src/CCEH_MSB.cpp
+    third-party/libart/src/art.c
     third-party/CCEH/src/Level_hashing.cpp P-BwTree/src/bwtree.cpp
     P-BwTree/test/test_suite.cpp third-party/WOART/woart.cpp
     P-CLHT/src/clht_lb_res.c P-CLHT/src/clht_gc.c P-CLHT/external/sspfd/sspfd.c

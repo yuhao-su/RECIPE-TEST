@@ -15,6 +15,7 @@ using namespace std;
 #include "third-party/CCEH/src/Level_hashing.h"
 #include "third-party/CCEH/src/CCEH.h"
 #include "third-party/WOART/woart.h"
+#include "third-party/libart/src/art.h"
 #include "masstree.h"
 #include "P-BwTree/src/bwtree.h"
 #include "clht.h"
@@ -39,6 +40,7 @@ enum {
     TYPE_LEVELHASH,
     TYPE_CCEH,
     TYPE_WOART,
+    TYPE_ART_ST
 };
 
 enum {
@@ -223,8 +225,8 @@ void barrier_cross(barrier_t *b) {
 barrier_t barrier;
 /////////////////////////////////////////////////////////////////////////////////
 
-static uint64_t LOAD_SIZE = 64000000;
-static uint64_t RUN_SIZE = 64000000;
+static uint64_t LOAD_SIZE = 6400000;
+static uint64_t RUN_SIZE = 6400000;
 
 void loadKey(TID tid, Key &key) {
     return ;
@@ -1216,6 +1218,39 @@ void ycsb_load_run_randint(int index_type, int wl, int kt, int ap, int num_threa
             printf("Throughput: run, %f ,ops/us\n", (RUN_SIZE * 1.0) / duration.count());
         }
 #endif
+    } else if (index_type == TYPE_ART_ST) {
+        art_tree *t = (art_tree*)malloc(sizeof(art_tree));
+        art_tree_init(t);
+        {
+            // Load
+            auto starttime = std::chrono::system_clock::now();
+            for (uint64_t i = 0; i < LOAD_SIZE; i++) {
+                art_insert(t, (unsigned char*)&init_keys[i], 8, &init_keys[i]);
+            }
+            auto duration = std::chrono::duration_cast<std::chrono::microseconds>(
+                    std::chrono::system_clock::now() - starttime);
+            printf("Throughput: load, %f ,ops/us\n", (LOAD_SIZE * 1.0) / duration.count());
+        }
+        {
+            // Run
+            auto starttime = std::chrono::system_clock::now();
+            
+            for (uint64_t i = 0; i < RUN_SIZE; i++) {
+                if (ops[i] == OP_INSERT) {
+                    art_insert(t, (unsigned char*)&keys[i], 8, &keys[i]);
+                } else if (ops[i] == OP_READ) {
+                    uint64_t *ret = reinterpret_cast<uint64_t *> (art_search(t, (unsigned char*)&keys[i], 8));
+                    if (*ret != keys[i]) {
+                        printf("[WOART] expected = %lu, search value = %lu\n", keys[i], *ret);
+                        exit(1);
+                    }
+                } 
+            }
+        
+            auto duration = std::chrono::duration_cast<std::chrono::microseconds>(
+                    std::chrono::system_clock::now() - starttime);
+            printf("Throughput: run, %f ,ops/us\n", (RUN_SIZE * 1.0) / duration.count());
+        }
     }
 }
 
@@ -1256,6 +1291,8 @@ int main(int argc, char **argv) {
         index_type = TYPE_CCEH;
     else if (strcmp(argv[1], "woart") == 0)
         index_type = TYPE_WOART;
+    else if (strcmp(argv[1], "art_st") == 0)
+        index_type = TYPE_ART_ST;
     else {
         fprintf(stderr, "Unknown index type: %s\n", argv[1]);
         exit(1);
