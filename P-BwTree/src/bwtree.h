@@ -263,7 +263,7 @@ static inline void clflush(char *data, int len, bool front, bool back)
 class BwTreeBase {
   // This is the presumed size of cache line
   //static constexpr size_t CACHE_LINE_SIZE = 64;
-  
+public:
   // This is the mask we used for address alignment (AND with this)
   static constexpr size_t CACHE_LINE_MASK = ~(CACHE_LINE_SIZE - 1);
   
@@ -278,6 +278,7 @@ class BwTreeBase {
    * all garbage pointer to BaseNode should be represented as void *, and are
    * casted to appropriate type manually
    */
+  public:
   class GarbageNode {
    public:
     // The epoch that this node is unlinked
@@ -375,13 +376,13 @@ class BwTreeBase {
   static_assert(sizeof(PaddedGCMetadata) == PaddedGCMetadata::ALIGNMENT, 
                 "class PaddedGCMetadata size does"
                 " not conform to the alignment!");
- 
+ public:
+  static thread_local int gc_id;
  private: 
   // This is used as the garbage collection ID, and is maintained in a per
   // thread level
   // This is initialized to -1 in order to distinguish between registered 
   // threads and unregistered threads
-  static thread_local int gc_id;
   
   // This is used to count the number of threads participating GC process
   // We use this number to initialize GC data structure

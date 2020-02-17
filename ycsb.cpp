@@ -14,11 +14,11 @@ using namespace std;
 #include "third-party/FAST_FAIR/btree.h"
 #include "third-party/CCEH/src/Level_hashing.h"
 #include "third-party/CCEH/src/CCEH.h"
-#include "third-party/WOART/woart.h"
-#include "third-party/libart/src/art.h"
+#include "clht.h"
 #include "masstree.h"
 #include "P-BwTree/src/bwtree.h"
-#include "clht.h"
+#include "third-party/WOART/woart.h"
+#include "third-party/libart/src/art.h"
 #include "ssmem.h"
 
 #ifdef HOT

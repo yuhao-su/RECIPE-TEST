@@ -34,11 +34,23 @@ LevelHashing::~LevelHashing(void){
   delete [] buckets[1];
 
 }
+uint64_t bigpow(uint64_t x, uint64_t y)
+{
+	uint64_t ret = 1;
+	uint64_t tmp = x;
+	while (y > 0)
+	{
+		if (y & 1) ret *= tmp;
+		y >>= 1;
+		tmp *= tmp;
+	}
+	return ret;
+}
 
 LevelHashing::LevelHashing(size_t _levels)
   : levels{_levels},
-  addr_capacity{(uint64_t)pow(2, levels)},
-  total_capacity{(uint64_t)pow(2, levels) + pow(2, levels-1)},
+  addr_capacity{(uint64_t)bigpow(2, levels)},
+  total_capacity{(uint64_t)bigpow(2, levels) + bigpow(2, levels-1)},
   resize_num{0}
 {
   locksize = 256;
