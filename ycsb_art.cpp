@@ -485,13 +485,20 @@ void ycsb_load_run_randint(int index_type, int wl, int kt, int ap, int num_threa
         {
             // Load
             auto starttime = std::chrono::system_clock::now();
-            tbb::parallel_for(tbb::blocked_range<uint64_t>(0, LOAD_SIZE), [&](const tbb::blocked_range<uint64_t> &scope) {
+            // tbb::parallel_for(tbb::blocked_range<uint64_t>(0, LOAD_SIZE), [&](const tbb::blocked_range<uint64_t> &scope) {
+            //     auto t = tree.getThreadInfo();
+            //     for (uint64_t i = scope.begin(); i != scope.end(); i++) {
+            //         Key *key = key->make_leaf(init_keys[i], sizeof(uint64_t), init_keys[i]);
+            //         tree.insert(key, t);
+            //     }
+            // });
+        
                 auto t = tree.getThreadInfo();
-                for (uint64_t i = scope.begin(); i != scope.end(); i++) {
+                for (uint64_t i = 0; i != LOAD_SIZE; i++) {
                     Key *key = key->make_leaf(init_keys[i], sizeof(uint64_t), init_keys[i]);
                     tree.insert(key, t);
                 }
-            });
+           
             auto duration = std::chrono::duration_cast<std::chrono::microseconds>(
                     std::chrono::system_clock::now() - starttime);
             printf("Throughput: load, %f ,ops/us\n", (LOAD_SIZE * 1.0) / duration.count());
@@ -501,9 +508,31 @@ void ycsb_load_run_randint(int index_type, int wl, int kt, int ap, int num_threa
             // Run
             Key *end = end->make_leaf(UINT64_MAX, sizeof(uint64_t), 0);
             auto starttime = std::chrono::system_clock::now();
-            tbb::parallel_for(tbb::blocked_range<uint64_t>(0, RUN_SIZE), [&](const tbb::blocked_range<uint64_t> &scope) {
+            // tbb::parallel_for(tbb::blocked_range<uint64_t>(0, RUN_SIZE), [&](const tbb::blocked_range<uint64_t> &scope) {
+            //     auto t = tree.getThreadInfo();
+            //     for (uint64_t i = scope.begin(); i != scope.end(); i++) {
+            //         if (ops[i] == OP_INSERT) {
+            //             Key *key = key->make_leaf(keys[i], sizeof(uint64_t), keys[i]);
+            //             tree.insert(key, t);
+            //         } else if (ops[i] == OP_READ) {
+            //             Key *key = key->make_leaf(keys[i], sizeof(uint64_t), 0);
+            //             uint64_t *val = reinterpret_cast<uint64_t *>(tree.lookup(key, t));
+            //             if (*val != keys[i]) {
+            //                 std::cout << "[ART] wrong key read: " << val << " expected:" << keys[i] << std::endl;
+            //                 exit(1);
+            //             }
+            //         } else if (ops[i] == OP_SCAN) {
+            //             Key *results[200];
+            //             Key *continueKey = NULL;
+            //             size_t resultsFound = 0;
+            //             size_t resultsSize = ranges[i];
+            //             Key *start = start->make_leaf(keys[i], sizeof(uint64_t), 0);
+            //             tree.lookupRange(start, end, continueKey, results, resultsSize, resultsFound, t);
+            //         }
+            //     }
+            // });
                 auto t = tree.getThreadInfo();
-                for (uint64_t i = scope.begin(); i != scope.end(); i++) {
+                for (uint64_t i = 0; i != LOAD_SIZE; i++) {
                     if (ops[i] == OP_INSERT) {
                         Key *key = key->make_leaf(keys[i], sizeof(uint64_t), keys[i]);
                         tree.insert(key, t);
@@ -523,7 +552,7 @@ void ycsb_load_run_randint(int index_type, int wl, int kt, int ap, int num_threa
                         tree.lookupRange(start, end, continueKey, results, resultsSize, resultsFound, t);
                     }
                 }
-            });
+            
             auto duration = std::chrono::duration_cast<std::chrono::microseconds>(
                     std::chrono::system_clock::now() - starttime);
             printf("Throughput: run, %f ,ops/us\n", (RUN_SIZE * 1.0) / duration.count());

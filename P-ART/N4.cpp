@@ -41,11 +41,12 @@ namespace ART_ROWEX {
 
     void N4::change(uint8_t key, N *val) {
         for (uint32_t i = 0; i < compactCount; i++) {
-            // assert(false);
             // std::cout<<(i>=compactCount)<<"\t";
             // if (i>=compactCount) exit(1);
-            std::cout<<"i: "<<i<<"\tcnt: "<<compactCount<<"\t"<<(i>=compactCount)<<std::endl;
+          
+            // std::cout<<"i: "<<i<<"\tcnt: "<<compactCount<<"\t"<<(i>=compactCount)<<std::endl;
             N *child = children[i].load();
+            if (i<=4) printf("%d child: %d\tkey: %c\t loadkey: %c\n", i, child, key, keys[i].load());
             if (child != nullptr && keys[i].load() == key) {
                 children[i].store(val, std::memory_order_release);
                 clflush((char *)&children[i], sizeof(N *), false, true);

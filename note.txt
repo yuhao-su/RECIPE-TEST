@@ -1,0 +1,3 @@
+I followed your instructions and run ART-tree but get a Segmentation fault (core dumped). The error occurs in `N4::change`. This function should always return in line 47, but the loop never ends because of the `__builtin_unreachable()` thus causes `children` array out of bound;
+
+Platform: Ubuntu 18.04
