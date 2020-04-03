@@ -5,14 +5,20 @@
 #ifndef ART_ROWEX_TREE_H
 #define ART_ROWEX_TREE_H
 #include "N.h"
-
+#include <atomic>
+#include "HashTable.hpp"
 using namespace ART;
 
+#define likely(x)   __builtin_expect(!!(x), 1)
+#define unlikely(x) __builtin_expect(!!(x), 0)
 namespace ART_ROWEX {
 
     class Tree {
     public:
         using LoadKeyFunction = void (*)(TID tid, Key &key);
+
+        std::atomic<int> restart_cnt;
+        int tree_size = 0;
 
     private:
         N *const root;
@@ -20,6 +26,8 @@ namespace ART_ROWEX {
         void *checkKey(const Key *ret, const Key *k) const;
 
         LoadKeyFunction loadKey;
+
+        HashTableUnsafe ht{256*256*256};
 
         Epoche epoche{256};
 
@@ -48,7 +56,7 @@ namespace ART_ROWEX {
             NoMatch,
             SkippedLevel
         };
-        static CheckPrefixResult checkPrefix(N* n, const Key *k, uint32_t &level);
+         CheckPrefixResult checkPrefix(N* n, const Key *k, uint32_t &level);
 
         static CheckPrefixPessimisticResult checkPrefixPessimistic(N *n, const Key *k, uint32_t &level,
                                                                    uint8_t &nonMatchingKey,
@@ -71,7 +79,7 @@ namespace ART_ROWEX {
 
         ThreadInfo getThreadInfo();
 
-        void *lookup(const Key *k, ThreadInfo &threadEpocheInfo) const;
+        void *lookup(const Key *k, ThreadInfo &threadEpocheInfo);
 
         bool lookupRange(const Key *start, const Key *end, const Key *continueKey, Key *result[], std::size_t resultLen,
                          std::size_t &resultCount, ThreadInfo &threadEpocheInfo) const;
@@ -79,6 +87,10 @@ namespace ART_ROWEX {
         void insert(const Key *k, ThreadInfo &epocheInfo);
 
         void remove(const Key *k, ThreadInfo &epocheInfo);
+
+        void dfs(N* node);
+
+        int get_size();
     };
 }
 #endif //ART_ROWEX_TREE_H

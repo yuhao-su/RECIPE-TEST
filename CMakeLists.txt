@@ -10,7 +10,7 @@ else()
     message(STATUS "Build type is set to ${CMAKE_BUILD_TYPE}")
 endif()
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -O0 -g -march=native -mrtm -mcx16 -mavx -mavx2 -mbmi2 -mlzcnt -Wno-deprecated-declarations -Wall -Wextra -fno-builtin-malloc -fno-builtin-calloc -fno-builtin-realloc -fno-builtin-free -faligned-new=64 ")#-DNDEBUG
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -O2 -g -march=native -mrtm -mcx16 -mavx -mavx2 -mbmi2 -mlzcnt -Wno-deprecated-declarations -Wall -Wextra -fno-builtin-malloc -fno-builtin-calloc -fno-builtin-realloc -fno-builtin-free -faligned-new=64 ")#-DNDEBUG
 
 execute_process(COMMAND cat /proc/cpuinfo COMMAND grep clflush OUTPUT_VARIABLE ENABLE_CLFLUSH)
 execute_process(COMMAND cat /proc/cpuinfo COMMAND grep clflushopt OUTPUT_VARIABLE ENABLE_CLFLUSHOPT)
@@ -75,6 +75,14 @@ if(WOART_STRING)
     add_definitions(-DSTRING_TYPE)
 endif(WOART_STRING)
 
+FIND_PACKAGE( OpenMP REQUIRED)
+if(OPENMP_FOUND)
+message("OPENMP FOUND")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
+endif()
+
 if (HOT)
 add_definitions(-DHOT)
 include_directories(P-HOT/libs/hot/commons/include P-HOT/libs/hot/rowex/include
@@ -83,6 +91,7 @@ include_directories(P-HOT/libs/hot/commons/include P-HOT/libs/hot/rowex/include
 endif()
 
 include_directories(third-party/CCEH)
+include_directories(third-party/CART)
 include_directories(P-Masstree)
 include_directories(P-CLHT/include P-CLHT/external/include)
 include_directories(P-BwTree)
@@ -99,7 +108,11 @@ set(INDEX_FILES P-ART/Tree.cpp
     #third-party/CCEH/src/Level_hashing.cpp P-BwTree/src/bwtree.cpp
     third-party/WOART/woart.cpp 
     # P-CLHT/src/clht_lb_res.c P-CLHT/src/clht_gc.c
-    #P-CLHT/external/sspfd/sspfd.c P-CLHT/external/ssmem/src/ssmem.c
+    # P-CLHT/external/sspfd/sspfd.c P-CLHT/external/ssmem/src/ssmem.c
+    third-party/CART/cart.cpp
+    third-party/CART/operation.cpp
+    third-party/aili/art/art_node.cpp
+    third-party/aili/art/art.cpp
     )
 else()
 set(INDEX_FILES P-ART/Tree.cpp 
@@ -111,12 +124,16 @@ set(INDEX_FILES P-ART/Tree.cpp
     third-party/WOART/woart.cpp
     #P-CLHT/src/clht_lb_res.c P-CLHT/src/clht_gc.c P-CLHT/external/sspfd/sspfd.c
     #P-CLHT/external/ssmem/src/ssmem.c
+    third-party/CART/cart.cpp
+    third-party/CART/operation.cpp
+    third-party/aili/art/art_node.cpp
+    third-party/aili/art/art.cpp
     )
 endif()
 
 add_library(Indexes ${INDEX_FILES})
 
-target_link_libraries(Indexes ${TbbLib} ${JemallocLib} ${CMAKE_THREAD_LIBS_INIT} pthread)
+target_link_libraries(Indexes ${TbbLib} ${JemallocLib} ${CMAKE_THREAD_LIBS_INIT} pthread) 
 
 set(YCSB_TEST ycsb_art.cpp)
 # set(YCSB_TEST ycsb.cpp)

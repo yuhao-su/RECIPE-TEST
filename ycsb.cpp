@@ -774,7 +774,7 @@ void ycsb_load_run_randint(int index_type, int wl, int kt, int ap, int num_threa
                         Key *key = key->make_leaf(keys[i], sizeof(uint64_t), keys[i]);
                         tree.insert(key, t);
                     } else if (ops[i] == OP_READ) {
-                        Key *key = key->make_leaf(keys[i], sizeof(uint64_t), 0);
+                        Key *key = key->make_leaf(init_keys[i], sizeof(uint64_t), 0);
                         uint64_t *val = reinterpret_cast<uint64_t *>(tree.lookup(key, t));
                         if (*val != keys[i]) {
                             std::cout << "[ART] wrong key read: " << val << " expected:" << keys[i] << std::endl;

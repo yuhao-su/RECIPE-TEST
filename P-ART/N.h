@@ -72,14 +72,14 @@ namespace ART_ROWEX {
         const uint32_t level;
         uint16_t count = 0;
         uint16_t compactCount = 0;
-
-
+        
 
         void setType(NTypes type);
 
         static uint64_t convertTypeToVersion(NTypes type);
 
     public:
+        // bool cached = 0;
 
         NTypes getType() const;
 
@@ -88,6 +88,8 @@ namespace ART_ROWEX {
         uint32_t getCount() const;
 
         bool isLocked(uint64_t version) const;
+
+        bool isCached() const;
 
         void writeLockOrRestart(bool &needRestart);
 

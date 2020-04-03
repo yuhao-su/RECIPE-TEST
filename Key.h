@@ -31,7 +31,7 @@ inline Key *Key::make_leaf(char *key, size_t key_len, uint64_t value)
     return k;
 }
 
-inline Key *Key::make_leaf(uint64_t key, size_t key_len, uint64_t value)
+inline  Key *Key::make_leaf(uint64_t key, size_t key_len, uint64_t value)
 {
     void *aligned_alloc;
     posix_memalign(&aligned_alloc, 64, sizeof(Key) + key_len);

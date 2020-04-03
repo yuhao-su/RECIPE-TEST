@@ -6,6 +6,8 @@
 workload
 workload_string
 workloads
+workloads_zipf
+workloads_small
 result_*
 masstree/.deps/*.d
 *.cache

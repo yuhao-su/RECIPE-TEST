@@ -58,6 +58,9 @@
         "streambuf": "cpp",
         "thread": "cpp",
         "cinttypes": "cpp",
-        "typeinfo": "cpp"
+        "typeinfo": "cpp",
+        "cart.h": "c",
+        "hash_map": "c",
+        "hash_set": "c"
     }
 }

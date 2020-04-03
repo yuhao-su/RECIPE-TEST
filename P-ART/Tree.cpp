@@ -2,6 +2,7 @@
 #include <functional>
 #include <algorithm>
 #include "Tree.h"
+#include <mmintrin.h>
 #include "N.cpp"
 #include "Epoche.cpp"
 #include <sys/types.h>
@@ -20,7 +21,8 @@
 namespace ART_ROWEX {
 
     Tree::Tree(LoadKeyFunction loadKey) : root(new N256(0, {})), loadKey(loadKey) {
-        N::clflush((char *)root, sizeof(N256), true, true);
+        // printf("%d %d %d %d\n", sizeof(N), sizeof(N16), sizeof(N48), sizeof(N256));
+        // N::clflush((char *)root, sizeof(N256), true, true);
     }
 
     Tree::~Tree() {
@@ -32,14 +34,69 @@ namespace ART_ROWEX {
         return ThreadInfo(this->epoche);
     }
 
-    void *Tree::lookup(const Key *k, ThreadInfo &threadEpocheInfo) const {
+    void Tree::dfs(N* node) {
+        if(N::isLeaf(node)) {
+            tree_size += sizeof(N);
+            // restart_cnt++;
+            return;
+        }
+        else {
+            switch (node->getType()) {
+                case NTypes::N4: {
+                    restart_cnt++;
+                    tree_size += sizeof(N4);
+                }
+                case NTypes::N16: {
+                    restart_cnt++;
+                    tree_size += sizeof(N16);
+                }
+                case NTypes::N48: {
+                    restart_cnt++;
+                    tree_size += sizeof(N48);
+                }
+                case NTypes::N256: {
+                    restart_cnt++;
+                    tree_size += sizeof(N256);
+                }
+            }
+            std::tuple<uint8_t, N *> children[256];
+            uint32_t children_cnt;
+            node->getChildren(node, 0U, 0xffU, children, children_cnt);
+            for (uint32_t i = 0; i < children_cnt; i++) {
+                dfs(std::get<1>(children[i]));
+            }
+        }
+    }
+
+    int Tree::get_size() {
+        dfs(root);
+        return tree_size;
+    }
+    void *Tree::lookup(const Key *k, ThreadInfo &threadEpocheInfo) {
         EpocheGuardReadonly epocheGuard(threadEpocheInfo);
+
         N *node = root;
         uint32_t level = 0;
         bool optimisticPrefixMatch = false;
-	
+        
+        uint64_t cached_key = *(uint64_t*)(&k->fkey[0]) & 0xffffffUL;
+        // _mm_prefetch(node, _MM_HINT_T0);
+        // N *cached_node = (N*)ht.find(cached_key);
+        // if (cached_node) {
+        //     // printf("cached key %x\n", cached_key);
+        //     // restart_cnt++;
+        //     node = cached_node;
+        //     level = 3;
+        // }
 	//art_cout << "Searching key " << k->fkey << std::endl;
         while (true) {
+            // if(unlikely(level == 3 && !cached_node)){
+            //     uint64_t cached_key = *(uint64_t*)(&k->fkey[0]) & 0xffffffUL;
+            //     // printf("level 4 key %x\n", cached_key);
+            //     ht.insert(cached_key, node);
+            //     // node->cached = 1;
+            //     // restart_cnt++;
+            // }
             switch (checkPrefix(node, k, level)) { // increases level
                 case CheckPrefixResult::NoMatch:
                     return NULL;
@@ -51,13 +108,15 @@ namespace ART_ROWEX {
                         return NULL;
                     }
                     node = N::getChild(k->fkey[level], node);
-
+                    
                     if (node == nullptr) {
                         return NULL;
                     }
+                    
                     if (N::isLeaf(node)) {
                         Key *ret = N::getLeaf(node);
                         if (level < k->getKeyLen() - 1 || optimisticPrefixMatch) {
+                            // restart_cnt++;
                             return checkKey(ret, k);
                         } else {
                             return &ret->value;
@@ -68,7 +127,7 @@ namespace ART_ROWEX {
             level++;
         }
     }
-
+    
     bool Tree::lookupRange(const Key *start, const Key *end, const Key *continueKey, Key *result[],
                                 std::size_t resultSize, std::size_t &resultsFound, ThreadInfo &threadEpocheInfo) const {
         for (uint32_t i = 0; i < std::min(start->getKeyLen(), end->getKeyLen()); ++i) {
@@ -260,6 +319,7 @@ namespace ART_ROWEX {
         N::clflush((char *)k, sizeof(Key) + k->key_len, false, true);
         EpocheGuard epocheGuard(epocheInfo);
         restart:
+        // restart_cnt++;
         bool needRestart = false;
 	//art_cout << __func__ << "Start/Restarting insert.." << std::endl;
         N *node = nullptr;
@@ -524,6 +584,8 @@ namespace ART_ROWEX {
                 return CheckPrefixResult::OptimisticMatch;
             }
         }
+        // restart_cnt++;
+
         return CheckPrefixResult::Match;
     }
 

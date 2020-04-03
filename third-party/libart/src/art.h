@@ -6,6 +6,9 @@
 extern "C" {
 #endif
 
+#define likely(x) __builtin_expect(!!(x), 1)
+#define unlikely(x) __builtin_expect(!!(x), 0)
+
 #define NODE4   1
 #define NODE16  2
 #define NODE48  3

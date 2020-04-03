@@ -47,7 +47,7 @@ static art_node* alloc_node(uint8_t type) {
 }
 
 /**
- * Initializes an ART tree
+ * Initializes an art tree
  * @return 0 on success.
  */
 int art_tree_init(art_tree *t) {
@@ -116,7 +116,7 @@ static void destroy_node(art_node *n) {
 }
 
 /**
- * Destroys an ART tree
+ * Destroys an art tree
  * @return 0 on success.
  */
 int art_tree_destroy(art_tree *t) {
@@ -125,7 +125,7 @@ int art_tree_destroy(art_tree *t) {
 }
 
 /**
- * Returns the size of the ART tree.
+ * Returns the size of the art tree.
  */
 
 #ifndef BROKEN_GCC_C99_INLINE
@@ -242,7 +242,7 @@ static int check_prefix(const art_node *n, const unsigned char *key, int key_len
  * Checks if a leaf matches
  * @return 0 on success.
  */
-static int leaf_matches(const art_leaf *n, const unsigned char *key, int key_len, int depth) {
+static inline int leaf_matches(const art_leaf *n, const unsigned char *key, int key_len, int depth) {
     (void)depth;
     // Fail if the key lengths are different
     if (n->key_len != (uint32_t)key_len) return 1;
@@ -252,7 +252,7 @@ static int leaf_matches(const art_leaf *n, const unsigned char *key, int key_len
 }
 
 /**
- * Searches for a value in the ART tree
+ * Searches for a value in the art tree
  * @arg t The tree
  * @arg key The key
  * @arg key_len The length of the key
@@ -265,7 +265,7 @@ void* art_search(const art_tree *t, const unsigned char *key, int key_len) {
     int prefix_len, depth = 0;
     while (n) {
         // Might be a leaf
-        if (IS_LEAF(n)) {
+        if (unlikely(IS_LEAF(n))) {
             n = (art_node*)LEAF_RAW(n);
             // Check if the expanded path matches
             if (!leaf_matches((art_leaf*)n, key, key_len, depth)) {
@@ -474,19 +474,21 @@ static void add_child16(art_node16 *n, art_node **ref, unsigned char c, void *ch
         add_child48(new_node, ref, c, child);
     }
 }
-
+#define NODE_ORDER
 static void add_child4(art_node4 *n, art_node **ref, unsigned char c, void *child) {
     if (n->n.num_children < 4) {
         int idx;
+#ifdef NODE_ORDER
         for (idx=0; idx < n->n.num_children; idx++) {
             if (c < n->keys[idx]) break;
         }
-
         // Shift to make room
         memmove(n->keys+idx+1, n->keys+idx, n->n.num_children - idx);
         memmove(n->children+idx+1, n->children+idx,
                 (n->n.num_children - idx)*sizeof(void*));
-
+#else
+        idx = n->n.num_children;
+#endif
         // Insert element
         n->keys[idx] = c;
         n->children[idx] = (art_node*)child;
@@ -632,7 +634,7 @@ RECURSE_SEARCH:;
 }
 
 /**
- * Inserts a new value into the ART tree
+ * Inserts a new value into the art tree
  * @arg t The tree
  * @arg key The key
  * @arg key_len The length of the key
@@ -799,7 +801,7 @@ static art_leaf* recursive_delete(art_node *n, art_node **ref, const unsigned ch
 }
 
 /**
- * Deletes a value from the ART tree
+ * Deletes a value from the art tree
  * @arg t The tree
  * @arg key The key
  * @arg key_len The length of the key

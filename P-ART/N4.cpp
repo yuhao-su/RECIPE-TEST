@@ -46,7 +46,7 @@ namespace ART_ROWEX {
           
             // std::cout<<"i: "<<i<<"\tcnt: "<<compactCount<<"\t"<<(i>=compactCount)<<std::endl;
             N *child = children[i].load();
-            if (i<=4) printf("%d child: %d\tkey: %c\t loadkey: %c\n", i, child, key, keys[i].load());
+            // if (i<=4) printf("%d child: %d\tkey: %c\t loadkey: %c\n", i, child, key, keys[i].load());
             if (child != nullptr && keys[i].load() == key) {
                 children[i].store(val, std::memory_order_release);
                 clflush((char *)&children[i], sizeof(N *), false, true);

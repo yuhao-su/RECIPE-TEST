@@ -6,17 +6,26 @@
 #include <fstream>
 #include <iostream>
 #include <stdlib.h>
+#include <unistd.h>
 #include "tbb/tbb.h"
-
+#include <stdio.h>
+#include <tbb/compat/thread>
 using namespace std;
 
 #include "P-ART/Tree.h"
 
 #include "third-party/WOART/woart.h"
 #include "third-party/libart/src/art.h"
+#include "third-party/CART/cart.h"
+#include "third-party/CART/operation.h"
+#include "third-party/aili/art/art.h"
+// #include "third-party/aili/art/art_node.h"
+
+
+
 #include "ssmem.h"
 
-
+#define MULTI_THREAD
 
 
 
@@ -31,7 +40,9 @@ enum {
     TYPE_LEVELHASH,
     TYPE_CCEH,
     TYPE_WOART,
-    TYPE_ART_ST
+    TYPE_ART_ST,
+    TYPE_CART,
+    TYPE_MULTI_ART
 };
 
 enum {
@@ -57,6 +68,7 @@ enum {
 enum {
     UNIFORM,
     ZIPFIAN,
+    SMALL
 };
 
 namespace Dummy {
@@ -82,41 +94,6 @@ namespace Dummy {
 }
 
 
-////////////////////////Helper functions for P-BwTree/////////////////////////////
-/*
- * class KeyComparator - Test whether BwTree supports context
- *                       sensitive key comparator
- *
- * If a context-sensitive KeyComparator object is being used
- * then it should follow rules like:
- *   1. There could be no default constructor
- *   2. There MUST be a copy constructor
- *   3. operator() must be const
- *
- */
-class KeyComparator {
- public:
-  inline bool operator()(const long int k1, const long int k2) const {
-    return k1 < k2;
-  }
-
-  inline bool operator()(const uint64_t k1, const uint64_t k2) const {
-      return k1 < k2;
-  }
-
-  inline bool operator()(const char *k1, const char *k2) const {
-      return memcmp(k1, k2, strlen(k1) > strlen(k2) ? strlen(k1) : strlen(k2)) < 0;
-  }
-
-  KeyComparator(int dummy) {
-    (void)dummy;
-
-    return;
-  }
-
-  KeyComparator() = delete;
-  //KeyComparator(const KeyComparator &p_key_cmp_obj) = delete;
-};
 
 /*
  * class KeyEqualityChecker - Tests context sensitive key equality
@@ -182,8 +159,13 @@ class KeyExtractor {
 
 /////////////////////////////////////////////////////////////////////////////////
 
-static uint64_t LOAD_SIZE = 6400000;
-static uint64_t RUN_SIZE = 6400000;
+uint32_t num_thread = 0;
+uint64_t cart_read_batch_size = 0;
+static const uint64_t LOAD_SIZE = 16000000;
+static const uint64_t RUN_SIZE = 16000000;
+static uint64_t CART_READ_BATCH_SIZE;
+// int a =0xfffff;
+static const uint64_t CART_WRITE_BATCH_SIZE = 0xffff;
 
 void loadKey(TID tid, Key &key) {
     return ;
@@ -215,7 +197,7 @@ void ycsb_load_run_string(int index_type, int wl, int kt, int ap, int num_thread
             init_file = "./index-microbench/workloads/ycsbkey_load_workloade";
             txn_file = "./index-microbench/workloads/ycsbkey_run_workloade";
         }
-    } else {
+    } else if (ap == ZIPFIAN){
         if (kt == STRING_KEY && wl == WORKLOAD_A) {
             init_file = "./index-microbench/workloads/ycsbkey_load_workloada";
             txn_file = "./index-microbench/workloads/ycsbkey_run_workloada";
@@ -232,6 +214,8 @@ void ycsb_load_run_string(int index_type, int wl, int kt, int ap, int num_thread
             init_file = "./index-microbench/workloads/ycsbkey_load_workloade";
             txn_file = "./index-microbench/workloads/ycsbkey_run_workloade";
         }
+    } else if(ap == SMALL) {
+
     }
 
     std::ifstream infile_load(init_file);
@@ -388,9 +372,9 @@ void ycsb_load_run_randint(int index_type, int wl, int kt, int ap, int num_threa
         std::vector<int> &ranges,
         std::vector<int> &ops)
 {
-    std::string init_file;
+    std::string init_file; 
     std::string txn_file;
-
+    std::string work_space_path("/home/syh/code/RECIPE-TEST/");
     if (ap == UNIFORM) {
         if (kt == RANDINT_KEY && wl == WORKLOAD_A) {
             init_file = "./index-microbench/workloads/loada_unif_int.dat";
@@ -408,24 +392,44 @@ void ycsb_load_run_randint(int index_type, int wl, int kt, int ap, int num_threa
             init_file = "./index-microbench/workloads/loade_unif_int.dat";
             txn_file = "./index-microbench/workloads/txnse_unif_int.dat";
         }
-    } else {
+    } else if (ap ==ZIPFIAN) {
         if (kt == RANDINT_KEY && wl == WORKLOAD_A) {
-            init_file = "./index-microbench/workloads/loada_unif_int.dat";
-            txn_file = "./index-microbench/workloads/txnsa_unif_int.dat";
+            init_file = "./index-microbench/workloads_zipf/loada_unif_int.dat";
+            txn_file = "./index-microbench/workloads_zipf/txnsa_unif_int.dat";
         } else if (kt == RANDINT_KEY && wl == WORKLOAD_B) {
-            init_file = "./index-microbench/workloads/loadb_unif_int.dat";
-            txn_file = "./index-microbench/workloads/txnsb_unif_int.dat";
+            init_file = "./index-microbench/workloads_zipf/loadb_unif_int.dat";
+            txn_file = "./index-microbench/workloads_zipf/txnsb_unif_int.dat";
         } else if (kt == RANDINT_KEY && wl == WORKLOAD_C) {
-            init_file = "./index-microbench/workloads/loadc_unif_int.dat";
-            txn_file = "./index-microbench/workloads/txnsc_unif_int.dat";
+            init_file = "./index-microbench/workloads_zipf/loadc_unif_int.dat";
+            txn_file = "./index-microbench/workloads_zipf/txnsc_unif_int.dat";
         } else if (kt == RANDINT_KEY && wl == WORKLOAD_D) {
-            init_file = "./index-microbench/workloads/loadd_unif_int.dat";
-            txn_file = "./index-microbench/workloads/txnsd_unif_int.dat";
+            init_file = "./index-microbench/workloads_zipf/loadd_unif_int.dat";
+            txn_file = "./index-microbench/workloads_zipf/txnsd_unif_int.dat";
         } else if (kt == RANDINT_KEY && wl == WORKLOAD_E) {
-            init_file = "./index-microbench/workloads/loade_unif_int.dat";
-            txn_file = "./index-microbench/workloads/txnse_unif_int.dat";
+            init_file = "./index-microbench/workloads_zipf/loade_unif_int.dat";
+            txn_file = "./index-microbench/workloads_zipf/txnse_unif_int.dat";
+        }
+    } else if(ap == SMALL) {
+        if (kt == RANDINT_KEY && wl == WORKLOAD_A) {
+            init_file = "./index-microbench/workloads_small/loada_unif_int.dat";
+            txn_file = "./index-microbench/workloads_small/txnsa_unif_int.dat";
+        } else if (kt == RANDINT_KEY && wl == WORKLOAD_B) {
+            init_file = "./index-microbench/workloads_small/loadb_unif_int.dat";
+            txn_file = "./index-microbench/workloads_small/txnsb_unif_int.dat";
+        } else if (kt == RANDINT_KEY && wl == WORKLOAD_C) {
+            init_file = "./index-microbench/workloads_small/loadc_unif_int.dat";
+            txn_file = "./index-microbench/workloads_small/txnsc_unif_int.dat";
+        } else if (kt == RANDINT_KEY && wl == WORKLOAD_D) {
+            init_file = "./index-microbench/workloads_small/loadd_unif_int.dat";
+            txn_file = "./index-microbench/workloads_small/txnsd_unif_int.dat";
+        } else if (kt == RANDINT_KEY && wl == WORKLOAD_E) {
+            init_file = "./index-microbench/workloads_small/loade_unif_int.dat";
+            txn_file = "./index-microbench/workloads_small/txnse_unif_int.dat";
         }
     }
+    init_file = work_space_path + init_file;
+    txn_file = work_space_path + txn_file;
+
 
     std::ifstream infile_load(init_file);
 
@@ -484,62 +488,58 @@ void ycsb_load_run_randint(int index_type, int wl, int kt, int ap, int num_threa
 
         {
             // Load
+            tree.restart_cnt = 0;
             auto starttime = std::chrono::system_clock::now();
-            // tbb::parallel_for(tbb::blocked_range<uint64_t>(0, LOAD_SIZE), [&](const tbb::blocked_range<uint64_t> &scope) {
-            //     auto t = tree.getThreadInfo();
-            //     for (uint64_t i = scope.begin(); i != scope.end(); i++) {
-            //         Key *key = key->make_leaf(init_keys[i], sizeof(uint64_t), init_keys[i]);
-            //         tree.insert(key, t);
-            //     }
-            // });
-        
+#ifdef MULTI_THREAD
+            tbb::parallel_for(tbb::blocked_range<uint64_t>(0, LOAD_SIZE), [&](const tbb::blocked_range<uint64_t> &scope) {
                 auto t = tree.getThreadInfo();
-                for (uint64_t i = 0; i != LOAD_SIZE; i++) {
+                for (uint64_t i = scope.begin(); i != scope.end(); i++) {
                     Key *key = key->make_leaf(init_keys[i], sizeof(uint64_t), init_keys[i]);
                     tree.insert(key, t);
                 }
-           
+            });
+            tbb::parallel_for(tbb::blocked_range<uint64_t>(0, RUN_SIZE), [&](const tbb::blocked_range<uint64_t> &scope) {
+                auto t = tree.getThreadInfo();
+                for (uint64_t i = scope.begin(); i != scope.end(); i++) {
+                    Key *key = key->make_leaf(keys[i], sizeof(uint64_t), keys[i]);
+                }
+            });
+#else        
+            auto t = tree.getThreadInfo();
+            for (uint64_t i = 0; i != LOAD_SIZE; i++) {
+                Key *key = key->make_leaf(init_keys[i], sizeof(uint64_t), init_keys[i]);
+                tree.insert(key, t);
+            }
+#endif          
             auto duration = std::chrono::duration_cast<std::chrono::microseconds>(
                     std::chrono::system_clock::now() - starttime);
             printf("Throughput: load, %f ,ops/us\n", (LOAD_SIZE * 1.0) / duration.count());
+            std::cout<<"Restart Count, load "<<tree.restart_cnt<<std::endl;
         }
+        sleep(1);
+        Key **key = new Key*[RUN_SIZE];
+        tbb::parallel_for(tbb::blocked_range<uint64_t>(0, RUN_SIZE), [&](const tbb::blocked_range<uint64_t> &scope) {
+            for (uint64_t i = scope.begin(); i != scope.end(); i++) {
+                key[i] = key[i]->make_leaf(init_keys[i], sizeof(uint64_t), 0);
+            }
+        });
 
         {
             // Run
+            tree.restart_cnt = 0;
             Key *end = end->make_leaf(UINT64_MAX, sizeof(uint64_t), 0);
             auto starttime = std::chrono::system_clock::now();
-            // tbb::parallel_for(tbb::blocked_range<uint64_t>(0, RUN_SIZE), [&](const tbb::blocked_range<uint64_t> &scope) {
-            //     auto t = tree.getThreadInfo();
-            //     for (uint64_t i = scope.begin(); i != scope.end(); i++) {
-            //         if (ops[i] == OP_INSERT) {
-            //             Key *key = key->make_leaf(keys[i], sizeof(uint64_t), keys[i]);
-            //             tree.insert(key, t);
-            //         } else if (ops[i] == OP_READ) {
-            //             Key *key = key->make_leaf(keys[i], sizeof(uint64_t), 0);
-            //             uint64_t *val = reinterpret_cast<uint64_t *>(tree.lookup(key, t));
-            //             if (*val != keys[i]) {
-            //                 std::cout << "[ART] wrong key read: " << val << " expected:" << keys[i] << std::endl;
-            //                 exit(1);
-            //             }
-            //         } else if (ops[i] == OP_SCAN) {
-            //             Key *results[200];
-            //             Key *continueKey = NULL;
-            //             size_t resultsFound = 0;
-            //             size_t resultsSize = ranges[i];
-            //             Key *start = start->make_leaf(keys[i], sizeof(uint64_t), 0);
-            //             tree.lookupRange(start, end, continueKey, results, resultsSize, resultsFound, t);
-            //         }
-            //     }
-            // });
+#ifdef MULTI_THREAD
+            tbb::parallel_for(tbb::blocked_range<uint64_t>(0, RUN_SIZE), [&](const tbb::blocked_range<uint64_t> &scope) {
                 auto t = tree.getThreadInfo();
-                for (uint64_t i = 0; i != LOAD_SIZE; i++) {
+                for (uint64_t i = scope.begin(); i != scope.end(); i++) {
                     if (ops[i] == OP_INSERT) {
                         Key *key = key->make_leaf(keys[i], sizeof(uint64_t), keys[i]);
                         tree.insert(key, t);
                     } else if (ops[i] == OP_READ) {
-                        Key *key = key->make_leaf(keys[i], sizeof(uint64_t), 0);
-                        uint64_t *val = reinterpret_cast<uint64_t *>(tree.lookup(key, t));
-                        if (*val != keys[i]) {
+                        // Key *key = key->make_leaf(init_keys[i], sizeof(uint64_t), 0);
+                        uint64_t *val = reinterpret_cast<uint64_t *>(tree.lookup(key[i], t));
+                        if (*val != init_keys[i]) {
                             std::cout << "[ART] wrong key read: " << val << " expected:" << keys[i] << std::endl;
                             exit(1);
                         }
@@ -552,11 +552,38 @@ void ycsb_load_run_randint(int index_type, int wl, int kt, int ap, int num_threa
                         tree.lookupRange(start, end, continueKey, results, resultsSize, resultsFound, t);
                     }
                 }
-            
+            });
+#else
+            auto t = tree.getThreadInfo();
+            for (uint64_t i = 0; i != LOAD_SIZE; i++) {
+                if (ops[i] == OP_INSERT) {
+                    Key *key = key->make_leaf(keys[i], sizeof(uint64_t), keys[i]);
+                    tree.insert(key, t);
+                } else if (ops[i] == OP_READ) {
+                    Key *key = key->make_leaf(keys[i], sizeof(uint64_t), 0);
+                    uint64_t *val = reinterpret_cast<uint64_t *>(tree.lookup(key, t));
+                    // if (*val != keys[i]) {
+                    //     std::cout << "[ART] wrong key read: " << val << " expected:" << keys[i] << std::endl;
+                    //     exit(1);
+                    // }
+                } else if (ops[i] == OP_SCAN) {
+                    Key *results[200];
+                    Key *continueKey = NULL;
+                    size_t resultsFound = 0;
+                    size_t resultsSize = ranges[i];
+                    Key *start = start->make_leaf(keys[i], sizeof(uint64_t), 0);
+                    tree.lookupRange(start, end, continueKey, results, resultsSize, resultsFound, t);
+                }
+            }
+#endif           
             auto duration = std::chrono::duration_cast<std::chrono::microseconds>(
                     std::chrono::system_clock::now() - starttime);
             printf("Throughput: run, %f ,ops/us\n", (RUN_SIZE * 1.0) / duration.count());
+            std::cout<<"Restart Count, run "<<tree.restart_cnt<<std::endl;
         }
+        std::cout<<"Tree Size: "<<tree.get_size()<<std::endl;
+        std::cout<<"Node Size: "<<tree.restart_cnt<<std::endl;
+
 } else if (index_type == TYPE_WOART) {
 #ifndef STRING_TYPE
         woart_tree *t = (woart_tree *)malloc(sizeof(woart_tree));
@@ -565,11 +592,17 @@ void ycsb_load_run_randint(int index_type, int wl, int kt, int ap, int num_threa
         {
             // Load
             auto starttime = std::chrono::system_clock::now();
+#ifdef MULTI_THREAD
             tbb::parallel_for(tbb::blocked_range<uint64_t>(0, LOAD_SIZE), [&](const tbb::blocked_range<uint64_t> &scope) {
                 for (uint64_t i = scope.begin(); i != scope.end(); i++) {
                     woart_insert(t, init_keys[i], sizeof(uint64_t), &init_keys[i]);
                 }
             });
+#else
+            for (uint64_t i = 0; i != LOAD_SIZE; i++) {
+                woart_insert(t, init_keys[i], sizeof(uint64_t), &init_keys[i]);
+            }
+#endif
             auto duration = std::chrono::duration_cast<std::chrono::microseconds>(
                     std::chrono::system_clock::now() - starttime);
             printf("Throughput: load, %f ,ops/us\n", (LOAD_SIZE * 1.0) / duration.count());
@@ -578,6 +611,7 @@ void ycsb_load_run_randint(int index_type, int wl, int kt, int ap, int num_threa
         {
             // Run
             auto starttime = std::chrono::system_clock::now();
+#ifdef MULTI_THREAD
             tbb::parallel_for(tbb::blocked_range<uint64_t>(0, RUN_SIZE), [&](const tbb::blocked_range<uint64_t> &scope) {
                 for (uint64_t i = scope.begin(); i != scope.end(); i++) {
                     if (ops[i] == OP_INSERT) {
@@ -594,6 +628,22 @@ void ycsb_load_run_randint(int index_type, int wl, int kt, int ap, int num_threa
                     }
                 }
             });
+#else
+            for (uint64_t i = 0; i != RUN_SIZE; i++) {
+                if (ops[i] == OP_INSERT) {
+                    woart_insert(t, keys[i], sizeof(uint64_t), &keys[i]);
+                } else if (ops[i] == OP_READ) {
+                    uint64_t *ret = reinterpret_cast<uint64_t *> (woart_search(t, keys[i], sizeof(uint64_t)));
+                    // if (*ret != keys[i]) {
+                    //     printf("[WOART] expected = %lu, search value = %lu\n", keys[i], *ret);
+                    //     exit(1);
+                    // }
+                } else if (ops[i] == OP_SCAN) {
+                    unsigned long buf[200];
+                    woart_scan(t, keys[i], ranges[i], buf);
+                }
+            }
+#endif
             auto duration = std::chrono::duration_cast<std::chrono::microseconds>(
                     std::chrono::system_clock::now() - starttime);
             printf("Throughput: run, %f ,ops/us\n", (RUN_SIZE * 1.0) / duration.count());
@@ -613,41 +663,208 @@ void ycsb_load_run_randint(int index_type, int wl, int kt, int ap, int num_threa
             printf("Throughput: load, %f ,ops/us\n", (LOAD_SIZE * 1.0) / duration.count());
         }
         {
+#ifdef ART_BATCH
+            
             // Run
             auto starttime = std::chrono::system_clock::now();
-            
-            for (uint64_t i = 0; i < RUN_SIZE; i++) {
+            tbb::parallel_for(tbb::blocked_range<uint64_t>(0, RUN_SIZE), [&](const tbb::blocked_range<uint64_t> &scope) {
+                for (uint64_t i = scope.begin(); i != scope.end(); i++) {
+            // #pragma omp parallel for
+            // for (uint64_t i = 0; i < RUN_SIZE; i++) {
                 if (ops[i] == OP_INSERT) {
                     art_insert(t, (unsigned char*)&keys[i], 8, &keys[i]);
                 } else if (ops[i] == OP_READ) {
                     uint64_t *ret = reinterpret_cast<uint64_t *> (art_search(t, (unsigned char*)&keys[i], 8));
                     if (*ret != keys[i]) {
-                        printf("[WOART] expected = %lu, search value = %lu\n", keys[i], *ret);
+                        printf("[ART_ST] expected = %lu, search value = %lu\n", keys[i], *ret);
                         exit(1);
                     }
                 } 
             }
-        
+            });
+#else
+            uint64_t batch_cnt = 0;
+            uint64_t time_r = 0, time_w = 0, time_sort = 0;
+            auto starttime = std::chrono::system_clock::now();
+            auto duration = std::chrono::duration_cast<std::chrono::microseconds>(
+                std::chrono::system_clock::now() - starttime);
+            for (uint64_t i = 0; i < RUN_SIZE; i++) {
+                if (ops[i] == OP_INSERT || ops[i] == OP_READ) {
+                    batch_cnt++;
+                }
+                if (batch_cnt == CART_READ_BATCH_SIZE || i == RUN_SIZE - 1) {                    
+                    sort(keys.begin() + i - batch_cnt + 1, keys.begin() + i + 1);
+                    duration = std::chrono::duration_cast<std::chrono::microseconds>(
+                                    std::chrono::system_clock::now() - starttime);
+                    time_sort += duration.count();
+
+                    starttime = std::chrono::system_clock::now();
+                    tbb::parallel_for(tbb::blocked_range<uint64_t>(i - batch_cnt + 1, i + 1), [&](const tbb::blocked_range<uint64_t> &scope) {
+                    for (uint64_t i = scope.begin(); i != scope.end(); i++) {
+                        if (ops[i] == OP_INSERT) {
+                            art_insert(t, (unsigned char*)&keys[i], 8, &keys[i]);
+                        } else if (ops[i] == OP_READ) {
+                            uint64_t *ret = reinterpret_cast<uint64_t *> (art_search(t, (unsigned char*)&keys[i], 8));
+                            if (*ret != keys[i]) {
+                                printf("[ART_ST] expected = %lu, search value = %lu\n", keys[i], *ret);
+                                exit(1);
+                            }
+                        } 
+                    }
+                    });
+                    duration = std::chrono::duration_cast<std::chrono::microseconds>(
+                                    std::chrono::system_clock::now() - starttime);
+                    time_r += duration.count();
+                }
+            }
+#endif
+            printf("Sort: %lld\tRead: %lld\tWrite: %lld\n", time_sort, time_r, time_w);
+            printf("Throughput: run, %f ,ops/us\n", (RUN_SIZE * 1.0) / (0 + time_r + time_w));
+        }
+    } else if (index_type == TYPE_CART) {
+        cart_tree *t = (cart_tree*)malloc(sizeof(cart_tree));
+        tbb::task_group tg;
+        ret_res_queue ret_res_q_r[num_thread];
+        for (int i = 0; i < num_thread; i++)
+            ret_res_q_r[i].ret_res = (ret_result*)malloc(sizeof(ret_result) * CART_READ_BATCH_SIZE);
+        cart_tree_init(t);
+        {
+            // Load
+            auto starttime = std::chrono::system_clock::now();
+            for (uint64_t i = 0; i < LOAD_SIZE; i++) {
+                cart_insert(t, (unsigned char*)&init_keys[i], 8, &init_keys[i]);
+            }
+            auto duration = std::chrono::duration_cast<std::chrono::microseconds>(
+                    std::chrono::system_clock::now() - starttime);
+            printf("Throughput: load, %f ,ops/us\n", (LOAD_SIZE * 1.0) / duration.count());
+        }
+        {
+            // Run
+            int worker_index = tbb::task_arena::current_thread_index();
+            // cout<<"id: "<<worker_index<<endl;
+            auto starttime = std::chrono::system_clock::now();
+            auto duration = std::chrono::duration_cast<std::chrono::microseconds>(
+                    std::chrono::system_clock::now() - starttime);
+            op_set_rt osr_r = create_osr(CART_READ_BATCH_SIZE);
+            op_set_rt osr_w = create_osr(CART_WRITE_BATCH_SIZE);
+            uint64_t time_r = 0, time_w = 0, time_sort = 0;
+            for (uint64_t i = 0; i < RUN_SIZE; i++) {
+                if (ops[i] == OP_INSERT) {
+                    osr_w.ocbs[osr_w.len++] = {CART_WRITE, keys[i], 8, keys[i], osr_w.len};
+                } else if (ops[i] == OP_READ) {
+                    osr_r.ocbs[osr_r.len++] = {CART_READ, keys[i], 8, keys[i], osr_r.len};
+                }
+                if (osr_r.len == CART_READ_BATCH_SIZE || i == RUN_SIZE - 1) {
+
+                    
+                    // std::cout<<"Read batch start"<<std::endl;
+                    starttime = std::chrono::system_clock::now();
+                    sort_op_set(osr_r);
+                    duration = std::chrono::duration_cast<std::chrono::microseconds>(
+                                    std::chrono::system_clock::now() - starttime);
+                    time_sort += duration.count();
+
+                    starttime = std::chrono::system_clock::now();
+                    // tg.run([&](){cart_batch_search(t, osr_r, tg);});
+                    cart_batch_search(t, osr_r, tg, ret_res_q_r);
+                    // poll_op_compele(osr_r);
+                    tg.wait();
+                    
+                    duration = std::chrono::duration_cast<std::chrono::microseconds>(
+                                    std::chrono::system_clock::now() - starttime);
+                    time_r += duration.count();
+
+                    osr_r.len = 0;
+                }
+                if (osr_w.len == CART_WRITE_BATCH_SIZE || i == RUN_SIZE - 1) {
+                    // execute
+                    // polling
+                    osr_w.len = 0;
+                }
+            }
+            printf("Sort: %lld\tRead: %lld\tWrite: %lld\n", time_sort, time_r, time_w);
+            printf("Throughput: run, %f ,ops/us\n", (RUN_SIZE * 1.0) / (0 + time_r + time_w));
+        }
+    } else if (index_type == TYPE_MULTI_ART) {
+        aili_art::adaptive_radix_tree *tree = aili_art::new_adaptive_radix_tree();
+
+        {
+            // Load
+            int duplication_cnt=0, put_res; 
+            auto starttime = std::chrono::system_clock::now();
+#ifdef MULTI_THREAD
+            tbb::parallel_for(tbb::blocked_range<uint64_t>(0, LOAD_SIZE), [&](const tbb::blocked_range<uint64_t> &scope) {
+                for (uint64_t i = scope.begin(); i != scope.end(); i++) {
+                // for (uint64_t i = 0; i != LOAD_SIZE; i++) {
+                    char *key = (char*)malloc(16);
+                    key[0] = 8;
+                    *(uint64_t *)(key + 1) = init_keys[i]; 
+                    put_res = aili_art::adaptive_radix_tree_put(tree, (const void *)(key + 1), 8);
+                    if(put_res) duplication_cnt++;
+                }
+            });
+#else        
+            
+#endif          
+            auto duration = std::chrono::duration_cast<std::chrono::microseconds>(
+                    std::chrono::system_clock::now() - starttime);
+            printf("Throughput: load, %f ,ops/us\n", (LOAD_SIZE * 1.0) / duration.count());
+            printf("Duplication count, %d times\n", duplication_cnt);
+
+        }
+
+        {
+            // Run
+            auto starttime = std::chrono::system_clock::now();
+#ifdef MULTI_THREAD
+            // tbb::parallel_for(tbb::blocked_range<uint64_t>(0, RUN_SIZE), [&](const tbb::blocked_range<uint64_t> &scope) {
+                // for (uint64_t i = scope.begin(); i != scope.end(); i++) {
+                for (uint64_t i = 0; i != LOAD_SIZE; i++) {
+                
+                    if (ops[i] == OP_INSERT) {
+                        char *key = (char*)malloc(16);
+                        key[0] = 8;
+                        *(uint64_t *)(key + 1) = keys[i]; 
+                        aili_art::adaptive_radix_tree_put(tree, (const void *)(key + 1), 8);
+                    } else if (ops[i] == OP_READ) {
+                        uint64_t key = keys[i];
+                        void *val = aili_art::adaptive_radix_tree_get(tree, &key, 8);
+                        // std::cout<<val<<endl;
+                        
+                        // if (val == 0) {
+                        //     std::cout<<"key: "<<key<<endl;
+                        // }
+                        if (val != 0 && *(uint64_t*)val != keys[i]) {
+                            std::cout << "[MULTI_ART] wrong key read: " << *(uint64_t*)val << " expected:" << keys[i] << std::endl;
+                            exit(1);
+                        }
+                    } 
+                }
+            // });
+
+#endif          
             auto duration = std::chrono::duration_cast<std::chrono::microseconds>(
                     std::chrono::system_clock::now() - starttime);
             printf("Throughput: run, %f ,ops/us\n", (RUN_SIZE * 1.0) / duration.count());
         }
     }
-}
+
+}   
 
 int main(int argc, char **argv) {
-    if (argc != 6) {
-        std::cout << "Usage: ./ycsb [index type] [ycsb workload type] [key distribution] [access pattern] [number of threads]\n";
+    if (argc != 7) {
+        std::cout << "Usage: ./ycsb [index type] [ycsb workload type] [key distribution] [access pattern] [number of threads] [batch size]\n";
         std::cout << "1. index type: art hot bwtree masstree clht\n";
         std::cout << "               fastfair levelhash cceh woart\n";
         std::cout << "2. ycsb workload type: a, b, c, e\n";
         std::cout << "3. key distribution: randint, string\n";
         std::cout << "4. access pattern: uniform, zipfian\n";
         std::cout << "5. number of threads (integer)\n";
+        std::cout << "6. For cart only -- batch_size (integer)\n";
         return 1;
     }
 
-    printf("%s, workload%s, %s, %s, threads %s\n", argv[1], argv[2], argv[3], argv[4], argv[5]);
+    printf("%s, workload%s, %s, %s, threads %s, batch size %s\n", argv[1], argv[2], argv[3], argv[4], argv[5], argv[6]);
 
     int index_type;
     if (strcmp(argv[1], "art") == 0)
@@ -674,6 +891,10 @@ int main(int argc, char **argv) {
         index_type = TYPE_WOART;
     else if (strcmp(argv[1], "art_st") == 0)
         index_type = TYPE_ART_ST;
+    else if (strcmp(argv[1], "cart") == 0)
+        index_type = TYPE_CART;
+    else if (strcmp(argv[1], "multi_art") == 0)
+        index_type = TYPE_MULTI_ART;
     else {
         fprintf(stderr, "Unknown index type: %s\n", argv[1]);
         exit(1);
@@ -710,14 +931,17 @@ int main(int argc, char **argv) {
         ap = UNIFORM;
     } else if (strcmp(argv[4], "zipfian") == 0) {
         ap = ZIPFIAN;
-        fprintf(stderr, "Not supported access pattern: %s\n", argv[4]);
-        exit(1);
+    } else if (strcmp(argv[4], "small") == 0) {
+        ap = SMALL;
     } else {
         fprintf(stderr, "Unknown access pattern: %s\n", argv[4]);
         exit(1);
     }
 
-    int num_thread = atoi(argv[5]);
+    num_thread = atoi(argv[5]);
+
+    cart_read_batch_size = atoi(argv[6]);
+    CART_READ_BATCH_SIZE = cart_read_batch_size;
     tbb::task_scheduler_init init(num_thread);
 
     if (kt != STRING_KEY) {
