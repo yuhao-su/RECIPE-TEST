@@ -69,6 +69,8 @@ namespace ART_ROWEX {
     }
 
     int Tree::get_size() {
+        printf("N: %d, N4: %d, N16: %d, N48: %d, N256: %d\n", 
+            sizeof(N), sizeof(N4), sizeof(N16), sizeof(N48), sizeof(N256));
         dfs(root);
         return tree_size;
     }
@@ -126,6 +128,78 @@ namespace ART_ROWEX {
             }
             level++;
         }
+    }
+    static inline void return_val(State &state, uint64_t &num_finished, uint64_t &y, 
+        const uint64_t offset, void **ret_val, void* val) {
+        state.stage = INIT;
+        ret_val[state.id] = val;
+        y++;
+        num_finished++;
+    }
+    void Tree::exec_acmc(Key **key, void **ret_val, std::vector<int> &ops, 
+        uint64_t offset, uint64_t len, ThreadInfo &threadEpocheInfo) {
+        uint64_t num_finished = 0, x = 0, y = 0;
+        uint32_t group_size = 30;
+        Group buff(group_size);
+        while (num_finished < len) {
+            State &state = buff.next_state();
+            // std::cout<<num_finished<<std::endl;
+            
+            if (state.stage == INIT && x < len) {
+                state.key = key[offset + x];
+                state.level = 0;
+                state.node = root;
+                state.id = offset + x;
+                state.optimisticPrefixMatch = false;
+                if (ops[offset + x] == OP_READ) {
+                    state.stage = READ_PROB;
+                } else if(ops[offset + x] == OP_INSERT) {
+                    state.stage = INSERT_PROB;
+                }
+                x++;
+                prefetch_range(state.key, 64);
+                prefetch_range(state.node, 64);
+            } else if (state.stage == READ_PROB) {
+                // check if it is leaf node
+                // printf("state: %d, level: %d\n", state.id, state.level);
+                if (N::isLeaf((N*)state.node)) {
+                    Key *ret = N::getLeaf((N*)state.node);
+                    if (state.level < state.key->getKeyLen() - 1 || state.optimisticPrefixMatch) {
+                        // restart_cnt++;
+                        return_val(state, num_finished, y, offset, ret_val, checkKey(ret, state.key));
+                        continue;
+                    } else {
+                        return_val(state, num_finished, y, offset, ret_val, &ret->value);
+                        continue;
+                    }
+                }
+            
+                switch (checkPrefix((N*)state.node, state.key, state.level)) { // increases level
+                    case CheckPrefixResult::NoMatch: {
+                        return_val(state, num_finished, y, offset, ret_val, NULL);
+                        continue;                       
+                    }
+                    case CheckPrefixResult::OptimisticMatch:
+                        state.optimisticPrefixMatch = true;
+                        // fallthrough
+                    case CheckPrefixResult::Match: {
+                        if (state.key->getKeyLen() <= state.level) {
+                            return_val(state, num_finished, y, offset, ret_val, NULL);
+                            continue;
+                        }
+                        state.node = N::getChild(state.key->fkey[state.level], (N*)state.node);
+                        
+                        if (state.node == nullptr) {
+                            return_val(state, num_finished, y, offset, ret_val, NULL);
+                            continue;
+                        }
+                    }
+                }
+                state.level++;
+                prefetch_range(state.node, 64);
+            }
+        }
+
     }
     
     bool Tree::lookupRange(const Key *start, const Key *end, const Key *continueKey, Key *result[],
@@ -316,7 +390,6 @@ namespace ART_ROWEX {
 
     void Tree::insert(const Key *k, ThreadInfo &epocheInfo) {
 	//art_cout << "Inserting key " << k->fkey << std::endl;
-        N::clflush((char *)k, sizeof(Key) + k->key_len, false, true);
         EpocheGuard epocheGuard(epocheInfo);
         restart:
         // restart_cnt++;
@@ -366,38 +439,13 @@ namespace ART_ROWEX {
                     }
                     N::change(parentNode, parentKey, newNode);
                     parentNode->writeUnlock();
-
-		#ifdef CRASH_SPLIT
-		    // Fork a new process now
-	    	    pid_t pid = fork();
-
-		    // child process
-		    if (pid == 0){
-			// This is a crash state. So initialize locks
-			lock_initialization();
-			art_cout << "\n Child process returned before updating level "<< std::endl;	
-			return;
-		    }
-		    else if (pid > 0) {
-			int returnStatus;
-			waitpid(pid, &returnStatus, 0);
-			art_cout << " Continuing in parent to insert " << k->fkey << std::endl;
-		#endif
-	    
-                    	// 4) update prefix of node, unlock
-                    	node->setPrefix(remainingPrefix.prefix,
-                                    node->getPrefi().prefixCount - ((nextLevel - level) + 1), true);
-
-                    	node->writeUnlock();
-                    	return;
-
-		#ifdef CRASH_SPLIT
-		   }//end parent 
-		   else {
-			art_cout << "Fork failed" << std::endl;
-			return;
-		   }
-		#endif
+	
+                    // 4) update prefix of node, unlock
+                    node->setPrefix(remainingPrefix.prefix,
+                                node->getPrefi().prefixCount - ((nextLevel - level) + 1), true);
+                    node->writeUnlock();
+                    return;
+		
                 } // end case  NoMatch
                 case CheckPrefixPessimisticResult::Match:
                     break;
@@ -418,7 +466,7 @@ namespace ART_ROWEX {
             if (N::isLeaf(nextNode)) {
                 node->lockVersionOrRestart(v, needRestart);
                 if (needRestart) goto restart;
-		Key *key;
+		        Key *key;
                 key = N::getLeaf(nextNode);
 
                 level++;

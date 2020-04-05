@@ -7,6 +7,7 @@
 #include "N.h"
 #include <atomic>
 #include "HashTable.hpp"
+#include "AMAC.hpp"
 using namespace ART;
 
 #define likely(x)   __builtin_expect(!!(x), 1)
@@ -80,6 +81,8 @@ namespace ART_ROWEX {
         ThreadInfo getThreadInfo();
 
         void *lookup(const Key *k, ThreadInfo &threadEpocheInfo);
+
+        void exec_acmc(Key **key, void** ret_val, std::vector<int> &ops, uint64_t offset, uint64_t len, ThreadInfo &threadEpocheInfo);
 
         bool lookupRange(const Key *start, const Key *end, const Key *continueKey, Key *result[], std::size_t resultLen,
                          std::size_t &resultCount, ThreadInfo &threadEpocheInfo) const;
