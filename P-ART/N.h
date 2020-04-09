@@ -14,7 +14,7 @@
 #ifdef LOCK_INIT
 #include "tbb/concurrent_vector.h"
 #endif
-
+#define AMAC_DYNAMI
 using TID = uint64_t;
 
 using namespace ART;
@@ -25,7 +25,7 @@ namespace ART_ROWEX {
  * LockCheckFreeReadTree
  * UnsynchronizedTree
  */
-
+    
     enum class NTypes : uint8_t {
         N4 = 0,
         N16 = 1,
@@ -80,6 +80,8 @@ namespace ART_ROWEX {
 
     public:
         // bool cached = 0;
+        static size_t node_sizes[4];
+        static size_t node_prefetch[4];
 
         NTypes getType() const;
 
@@ -139,6 +141,12 @@ namespace ART_ROWEX {
 
         static Key *getAnyChildTid(const N *n);
 
+        static N* getNode(const N* n);
+
+        static NTypes getNodeType(const N* n);
+
+        static N* setNodeType(const N* n, NTypes t);
+
         static void deleteChildren(N *node);
 
         static void deleteNode(N *node);
@@ -181,6 +189,7 @@ namespace ART_ROWEX {
         }
 
         inline bool insert(uint8_t key, N *n, bool flush) __attribute__((always_inline));
+        inline bool insertCopy(uint8_t key, N *n, bool flush) __attribute__((always_inline));
 
         template<class NODE>
         void copyTo(NODE *n) const;
@@ -242,6 +251,7 @@ namespace ART_ROWEX {
         }
 
         inline bool insert(uint8_t key, N *n, bool flush) __attribute__((always_inline));
+        inline bool insertCopy(uint8_t key, N *n, bool flush) __attribute__((always_inline));
 
         template<class NODE>
         void copyTo(NODE *n) const;
@@ -280,6 +290,7 @@ namespace ART_ROWEX {
         }
 
         inline bool insert(uint8_t key, N *n, bool flush) __attribute__((always_inline));
+        inline bool insertCopy(uint8_t key, N *n, bool flush) __attribute__((always_inline));
 
         template<class NODE>
         void copyTo(NODE *n) const;
@@ -314,6 +325,7 @@ namespace ART_ROWEX {
         }
 
         inline bool insert(uint8_t key, N *val, bool flush) __attribute__((always_inline));
+        inline bool insertCopy(uint8_t key, N *n, bool flush) __attribute__((always_inline));
 
         template<class NODE>
         void copyTo(NODE *n) const;

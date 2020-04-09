@@ -19,7 +19,12 @@ namespace ART_ROWEX {
         using LoadKeyFunction = void (*)(TID tid, Key &key);
 
         std::atomic<int> restart_cnt;
-        int tree_size = 0;
+        int N4_num = 0;
+        int N16_num = 0;
+        int N48_num = 0;
+        int N256_num = 0;
+        int leaf_num = 0;
+
 
     private:
         N *const root;
@@ -93,7 +98,7 @@ namespace ART_ROWEX {
 
         void dfs(N* node);
 
-        int get_size();
+        void get_size();
     };
 }
 #endif //ART_ROWEX_TREE_H

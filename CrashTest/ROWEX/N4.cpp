@@ -28,6 +28,8 @@ namespace ART_ROWEX {
         return true;
     }
 
+    
+
     template<class NODE>
     void N4::copyTo(NODE *n) const {
         for (uint32_t i = 0; i < compactCount; ++i) {

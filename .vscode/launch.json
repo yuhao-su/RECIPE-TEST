@@ -10,11 +10,12 @@
             "request": "launch",
             "program": "${workspaceFolder}/build/ycsb",
             "args": [
-                "multi_art",
+                "art_acmc",
                 "c",
                 "randint",
                 "uniform",
-                "20"
+                "1",
+                "1048555"
             ],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",

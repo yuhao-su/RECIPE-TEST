@@ -162,8 +162,8 @@ class KeyExtractor {
 
 uint32_t num_thread = 0;
 uint64_t cart_read_batch_size = 0;
-static const uint64_t LOAD_SIZE = 16000000;
-static const uint64_t RUN_SIZE = 16000000;
+static uint64_t LOAD_SIZE = 50000;//16000000;
+static uint64_t RUN_SIZE = 10000000;//16000000;
 static uint64_t CART_READ_BATCH_SIZE;
 // int a =0xfffff;
 static const uint64_t CART_WRITE_BATCH_SIZE = 0xffff;
@@ -515,7 +515,7 @@ void ycsb_load_run_randint(int index_type, int wl, int kt, int ap, int num_threa
         Key **key = new Key*[RUN_SIZE];
         tbb::parallel_for(tbb::blocked_range<uint64_t>(0, RUN_SIZE), [&](const tbb::blocked_range<uint64_t> &scope) {
             for (uint64_t i = scope.begin(); i != scope.end(); i++) {
-                key[i] = key[i]->make_leaf(init_keys[i], sizeof(uint64_t), 0);
+                key[i] = key[i]->make_leaf(init_keys[i % LOAD_SIZE], sizeof(uint64_t), 0);
             }
         });
 
@@ -533,8 +533,8 @@ void ycsb_load_run_randint(int index_type, int wl, int kt, int ap, int num_threa
                         tree.insert(key, t);
                     } else if (ops[i] == OP_READ) {
                         // Key *key = key->make_leaf(init_keys[i], sizeof(uint64_t), 0);
-                        uint64_t *val = reinterpret_cast<uint64_t *>(tree.lookup(key[i], t));
-                        if (*val != init_keys[i]) {
+                        uint64_t *val = reinterpret_cast<uint64_t *>(tree.lookup(key[i%LOAD_SIZE], t));
+                        if (*val != init_keys[i%LOAD_SIZE]) {
                             std::cout << "[ART] wrong key read: " << val << " expected:" << keys[i] << std::endl;
                             exit(1);
                         }
@@ -576,9 +576,22 @@ void ycsb_load_run_randint(int index_type, int wl, int kt, int ap, int num_threa
             printf("Throughput: run, %f ,ops/us\n", (RUN_SIZE * 1.0) / duration.count());
             std::cout<<"Restart Count, run "<<tree.restart_cnt<<std::endl;
         }
-        std::cout<<"Tree Size: "<<tree.get_size()<<std::endl;
-        std::cout<<"Node Size: "<<tree.restart_cnt<<std::endl;
-
+        tree.get_size();
+        std::cout<<"Node Size Total: "<<tree.leaf_num * 36
+                                        + tree.N4_num * sizeof(ART_ROWEX::N4)
+                                        + tree.N16_num * sizeof(ART_ROWEX::N16)
+                                        + tree.N48_num * sizeof(ART_ROWEX::N48)
+                                        + tree.N256_num * sizeof(ART_ROWEX::N256)<<std::endl;
+        std::cout<<"Node Number Total: "<<tree.leaf_num
+                                    + tree.N4_num 
+                                    + tree.N16_num
+                                    + tree.N48_num
+                                    + tree.N256_num<<std::endl;
+        std::cout<<"Leaf Number: "<<tree.leaf_num
+                 <<"   N4 Number:"<< tree.N4_num 
+                 <<"  N16 Number:"<< tree.N16_num
+                 <<"  N48 Number:"<< tree.N48_num
+                 <<" N256 Number:"<< tree.N256_num<<std::endl;                    
     } else if (index_type == TYPE_ART_ACMC) {
         ART_ROWEX::Tree tree(loadKey);
 
@@ -611,7 +624,7 @@ void ycsb_load_run_randint(int index_type, int wl, int kt, int ap, int num_threa
             // Run
             tree.restart_cnt = 0;
             Key *end = end->make_leaf(UINT64_MAX, sizeof(uint64_t), 0);
-            uint32_t block_num = num_thread * 16;
+            uint32_t block_num = num_thread * 128;
             uint32_t _block_size = RUN_SIZE / block_num;
             auto starttime = std::chrono::system_clock::now();
             tbb::parallel_for(tbb::blocked_range<uint32_t>(0, block_num), [&](const tbb::blocked_range<uint32_t> &scope) {
@@ -650,7 +663,7 @@ void ycsb_load_run_randint(int index_type, int wl, int kt, int ap, int num_threa
         for (int i = 0; i < RUN_SIZE; i++) {
             if (ret_val[i] == NULL) {
                 std::cout<<"key not found: "<<i<<endl;
-                // exit(1);
+                exit(1);
                 continue;
             }
             if (*(uint64_t*)ret_val[i] != init_keys[i]) {
@@ -659,8 +672,17 @@ void ycsb_load_run_randint(int index_type, int wl, int kt, int ap, int num_threa
                 exit(1);
             }
         }
-        std::cout<<"Tree Size: "<<tree.get_size()<<std::endl;
-        std::cout<<"Node Size: "<<tree.restart_cnt<<std::endl;
+        tree.get_size();
+        std::cout<<"Node Size Total: "<<tree.leaf_num * 36
+                                        + tree.N4_num * sizeof(ART_ROWEX::N4)
+                                        + tree.N16_num * sizeof(ART_ROWEX::N16)
+                                        + tree.N48_num * sizeof(ART_ROWEX::N48)
+                                        + tree.N256_num * sizeof(ART_ROWEX::N256)<<std::endl;
+        std::cout<<"Node Number: "<<tree.leaf_num
+                                    + tree.N4_num 
+                                    + tree.N16_num
+                                    + tree.N48_num
+                                    + tree.N256_num<<std::endl;
 
 } else if (index_type == TYPE_WOART) {
 #ifndef STRING_TYPE
@@ -930,7 +952,7 @@ void ycsb_load_run_randint(int index_type, int wl, int kt, int ap, int num_threa
 }   
 
 int main(int argc, char **argv) {
-    if (argc != 7) {
+    if (argc > 8) {
         std::cout << "Usage: ./ycsb [index type] [ycsb workload type] [key distribution] [access pattern] [number of threads] [batch size]\n";
         std::cout << "1. index type: art hot bwtree masstree clht\n";
         std::cout << "               fastfair levelhash cceh woart\n";
@@ -973,7 +995,7 @@ int main(int argc, char **argv) {
         index_type = TYPE_CART;
     else if (strcmp(argv[1], "multi_art") == 0)
         index_type = TYPE_MULTI_ART;
-    else if (strcmp(argv[1], "art_acmc") == 0)
+    else if (strcmp(argv[1], "art_amac") == 0)
         index_type = TYPE_ART_ACMC;
     else {
         fprintf(stderr, "Unknown index type: %s\n", argv[1]);
@@ -1020,8 +1042,15 @@ int main(int argc, char **argv) {
 
     num_thread = atoi(argv[5]);
 
-    cart_read_batch_size = atoi(argv[6]);
-    CART_READ_BATCH_SIZE = cart_read_batch_size;
+    if (index_type == TYPE_CART) {
+        cart_read_batch_size = atoi(argv[6]);
+        CART_READ_BATCH_SIZE = cart_read_batch_size;
+    }
+
+    if (index_type == TYPE_ART_ACMC || index_type == TYPE_ART) {
+        LOAD_SIZE = atoi(argv[6]);
+        RUN_SIZE  = atoi(argv[7]);
+    }
     tbb::task_scheduler_init init(num_thread);
 
     if (kt != STRING_KEY) {

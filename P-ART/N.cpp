@@ -11,6 +11,8 @@ namespace ART_ROWEX {
     static unsigned long write_latency_in_ns = 0;
     static unsigned long cpu_freq_mhz = 2100;
     static unsigned long cache_line_size = 64;
+    size_t N::node_sizes[4] = {64, 168, 664, 2072};
+    size_t N::node_prefetch[4] = {1, 3, 11, 33};
 
     static inline void cpu_pause()
     {
@@ -210,28 +212,28 @@ namespace ART_ROWEX {
         switch (node->getType()) {
             case NTypes::N4: {
                 auto n = static_cast<N4 *>(node);
-                if (n->compactCount == 4 && n->count <= 3) {
-                    insertCompact<N4>(n, parentNode, keyParent, key, val, threadInfo, needRestart);
-                    break;
-                }
+                // if (n->compactCount == 4 && n->count <= 3) {
+                //     insertCompact<N4>(n, parentNode, keyParent, key, val, threadInfo, needRestart);
+                //     break;
+                // }
                 insertGrow<N4, N16>(n, parentNode, keyParent, key, val, threadInfo, needRestart);
                 break;
             }
             case NTypes::N16: {
                 auto n = static_cast<N16 *>(node);
-                if (n->compactCount == 16 && n->count <= 14) {
-                    insertCompact<N16>(n, parentNode, keyParent, key, val, threadInfo, needRestart);
-                    break;
-                }
+                // if (n->compactCount == 16 && n->count <= 14) {
+                //     insertCompact<N16>(n, parentNode, keyParent, key, val, threadInfo, needRestart);
+                //     break;
+                // }
                 insertGrow<N16, N48>(n, parentNode, keyParent, key, val, threadInfo, needRestart);
                 break;
             }
             case NTypes::N48: {
                 auto n = static_cast<N48 *>(node);
-                if (n->compactCount == 48 && n->count != 48) {
-                    insertCompact<N48>(n, parentNode, keyParent, key, val, threadInfo, needRestart);
-                    break;
-                }
+                // if (n->compactCount == 48 && n->count != 48) {
+                //     insertCompact<N48>(n, parentNode, keyParent, key, val, threadInfo, needRestart);
+                //     break;
+                // }
                 insertGrow<N48, N256>(n, parentNode, keyParent, key, val, threadInfo, needRestart);
                 break;
             }
@@ -431,17 +433,34 @@ namespace ART_ROWEX {
         clflush((char *)&this->prefix, sizeof(Prefix), false, true);
     }
 
+    static const uint64_t LEAF_BIT = (1ULL << 0);
+    
     bool N::isLeaf(const N *n) {
-        return (reinterpret_cast<uintptr_t>(n) & (1ULL << 0));
+        return (reinterpret_cast<uintptr_t>(n) & LEAF_BIT);
     }
 
     N *N::setLeaf(const Key *k) {
-        return reinterpret_cast<N *>(reinterpret_cast<void *>((reinterpret_cast<uintptr_t>(k) | (1ULL << 0))));
+        return reinterpret_cast<N *>(reinterpret_cast<void *>((reinterpret_cast<uintptr_t>(k) | LEAF_BIT)));
     }
 
     Key *N::getLeaf(const N *n) {
-        return reinterpret_cast<Key *>(reinterpret_cast<void *>((reinterpret_cast<uintptr_t>(n) & ~(1ULL << 0))));
+        return reinterpret_cast<Key *>(reinterpret_cast<void *>((reinterpret_cast<uintptr_t>(n) & ~LEAF_BIT)));
     }
+
+    static const uint64_t NODE_TYPE_BIT = (3ULL << 48);
+
+    N* N::getNode(const N* n) {
+        return reinterpret_cast<N *>(reinterpret_cast<void *>((reinterpret_cast<uintptr_t>(n) & ((1ULL<<48) - 1ULL))));
+    }
+
+    NTypes N::getNodeType(const N* n) {
+        return (NTypes)((reinterpret_cast<uintptr_t>(n) >> 48) & 3ULL);
+    }
+
+    N* N::setNodeType(const N* n, NTypes t) {
+        return reinterpret_cast<N *>(reinterpret_cast<void *>((reinterpret_cast<uintptr_t>(n) | (((uint64_t)t & 3ULL) << 48))));
+    }
+
 
     std::tuple<N *, uint8_t> N::getSecondChild(N *node, const uint8_t key) {
         switch (node->getType()) {

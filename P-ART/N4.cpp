@@ -19,6 +19,9 @@ namespace ART_ROWEX {
         if (compactCount == 4) {
             return false;
         }
+#ifdef AMAC_DYNAMIC
+        n = N::setNodeType(n, n->getType());
+#endif
         keys[compactCount].store(key, flush ? std::memory_order_release : std::memory_order_relaxed);
         children[compactCount].store(n, flush ? std::memory_order_release : std::memory_order_relaxed);
         compactCount++;
@@ -29,22 +32,36 @@ namespace ART_ROWEX {
         return true;
     }
 
+    inline bool N4::insertCopy(uint8_t key, N *n, bool flush) {
+        if (compactCount == 4) {
+            return false;
+        }
+        keys[compactCount].store(key, flush ? std::memory_order_release : std::memory_order_relaxed);
+        children[compactCount].store(n, flush ? std::memory_order_release : std::memory_order_relaxed);
+        compactCount++;
+        count++;
+        return true;
+    }
+
     template<class NODE>
     void N4::copyTo(NODE *n) const {
         for (uint32_t i = 0; i < compactCount; ++i) {
             N *child = children[i].load();
             if (child != nullptr) {
-                n->insert(keys[i].load(), child, false);
+                n->insertCopy(keys[i].load(), child, false);
             }
         }
     }
 
     void N4::change(uint8_t key, N *val) {
+#ifdef AMAC_DYNAMIC
+        val = N::setNodeType(val, val->getType());
+#endif
         for (uint32_t i = 0; i < compactCount; i++) {
             // std::cout<<(i>=compactCount)<<"\t";
             // if (i>=compactCount) exit(1);
-          
             // std::cout<<"i: "<<i<<"\tcnt: "<<compactCount<<"\t"<<(i>=compactCount)<<std::endl;
+            
             N *child = children[i].load();
             // if (i<=4) printf("%d child: %d\tkey: %c\t loadkey: %c\n", i, child, key, keys[i].load());
             if (child != nullptr && keys[i].load() == key) {

@@ -1,0 +1,2 @@
+*********ART SIZE WORKLOAD_C UNIFORM*********
+---LOAD_SIZE * 1 * 1---

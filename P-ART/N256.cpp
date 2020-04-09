@@ -13,24 +13,37 @@ namespace ART_ROWEX {
         }
     }
 
+
     inline bool N256::insert(uint8_t key, N *val, bool flush) {
+#ifdef AMAC_DYNAMIC
+        val = N::setNodeType(val, val->getType());
+#endif
         children[key].store(val, flush ? std::memory_order_release : std::memory_order_relaxed);
         if (flush) clflush((char *)&children[key], sizeof(N *), false, true);
         count++;
         return true;
     }
-
+    
+    inline bool N256::insertCopy(uint8_t key, N *val, bool flush) {
+        children[key].store(val, flush ? std::memory_order_release : std::memory_order_relaxed);
+        count++;
+        return true;
+    }
+    
     template<class NODE>
     void N256::copyTo(NODE *n) const {
         for (int i = 0; i < 256; ++i) {
             N *child = children[i].load();
             if (child != nullptr) {
-                n->insert(i, child, false);
+                n->insertCopy(i, child, false);
             }
         }
     }
 
     void N256::change(uint8_t key, N *n) {
+#ifdef AMAC_DYNAMIC
+        n = N::setNodeType(n, n->getType());
+#endif
         children[key].store(n, std::memory_order_release);
         clflush((char *)&children[key], sizeof(N *), false, true);
     }

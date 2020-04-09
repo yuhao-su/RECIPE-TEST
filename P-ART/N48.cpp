@@ -8,7 +8,9 @@ namespace ART_ROWEX {
         if (compactCount == 48) {
             return false;
         }
-
+#ifdef AMAC_DYNAMIC
+        n = N::setNodeType(n, n->getType());
+#endif
         while (true) {
             if (children[compactCount].load() == nullptr)
                 break;
@@ -28,17 +30,43 @@ namespace ART_ROWEX {
         return true;
     }
 
+    inline bool N48::insertCopy(uint8_t key, N *n, bool flush) {
+        if (compactCount == 48) {
+            return false;
+        }
+        while (true) {
+            if (children[compactCount].load() == nullptr)
+                break;
+            else {
+                compactCount++;
+                if (compactCount == 48)
+                    return false;
+            }
+        }
+        children[compactCount].store(n, flush ? std::memory_order_release : std::memory_order_relaxed);
+        childIndex[key].store(compactCount, flush ? std::memory_order_release : std::memory_order_relaxed);
+        compactCount++;
+        count++;
+        return true;
+    }
+
     template<class NODE>
     void N48::copyTo(NODE *n) const {
+        // printf("%llx\n", children);
+
         for (unsigned i = 0; i < 256; i++) {
             uint8_t index = childIndex[i].load();
             if (index != emptyMarker) {
-                n->insert(i, children[index], false);
+                // printf("%d   %llx\n", index, static_cast<void*>(children[index]));
+                n->insertCopy(i, children[index], false);
             }
         }
     }
 
     void N48::change(uint8_t key, N *val) {
+#ifdef AMAC_DYNAMIC
+        val = N::setNodeType(val, val->getType());
+#endif
         uint8_t index = childIndex[key].load();
         assert(index != emptyMarker);
         children[index].store(val, std::memory_order_release);

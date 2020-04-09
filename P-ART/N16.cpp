@@ -9,6 +9,9 @@ namespace ART_ROWEX {
         if (compactCount == 16) {
             return false;
         }
+#ifdef AMAC_DYNAMIC
+        n = N::setNodeType(n, n->getType());
+#endif
         keys[compactCount].store(flipSign(key), flush ? std::memory_order_release : std::memory_order_relaxed);
         children[compactCount].store(n, flush ? std::memory_order_release : std::memory_order_relaxed);
         if (flush) clflush((char *)&children[compactCount], sizeof(N *), false, true);
@@ -19,17 +22,32 @@ namespace ART_ROWEX {
         return true;
     }
 
+    inline bool N16::insertCopy(uint8_t key, N *n, bool flush) {
+        if (compactCount == 16) {
+            return false;
+        }
+        keys[compactCount].store(flipSign(key), flush ? std::memory_order_release : std::memory_order_relaxed);
+        children[compactCount].store(n, flush ? std::memory_order_release : std::memory_order_relaxed);
+        if (flush) clflush((char *)&children[compactCount], sizeof(N *), false, true);
+        compactCount++;
+        count++;
+        return true;
+    }
+
     template<class NODE>
     void N16::copyTo(NODE *n) const {
         for (unsigned i = 0; i < compactCount; i++) {
             N *child = children[i].load();
             if (child != nullptr) {
-                n->insert(flipSign(keys[i]), child, false);
+                n->insertCopy(flipSign(keys[i]), child, false);
             }
         }
     }
 
     void N16::change(uint8_t key, N *val) {
+#ifdef AMAC_DYNAMIC
+        val = N::setNodeType(val, val->getType());
+#endif
         auto childPos = getChildPos(key);
         assert(childPos != nullptr);
         childPos->store(val, std::memory_order_release);
