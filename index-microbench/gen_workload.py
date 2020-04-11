@@ -35,8 +35,8 @@ for line in f_config :
     args.append(line[:-1])
 # note: need to specify
 ycsb_dir = 'YCSB/'
-workload_dir = 'workload_spec_small/'
-output_dir='workloads_small/'
+workload_dir = 'workload_spec/'
+output_dir='workloads/'
 
 workload = args[0]
 key_type = args[1]

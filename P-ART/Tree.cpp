@@ -17,7 +17,30 @@
 	std::ofstream dev_null("/dev/null");
 	std::ostream &art_cout = dev_null;
 #endif
-
+// void * operator new(size_t size)        // your operator new might
+// {                                       // take additional params
+//     if (size == 0) {                      // handle 0-byte requests
+//         size = 1;                           // by treating them as
+//     }                                     // 1-byte requests
+//     while (1) {
+//         void* ret = aligned_alloc(64, size);
+//         if (ret)
+//             return ret;
+//         // allocation was unsuccessful; find out what the
+//         // current error-handling function is (see Item 7)
+//         // new_handler globalHandler = set_new_handler(0);
+//         // set_new_handler(globalHandler);
+//         // if (globalHandler) (*globalHandler)();
+//         // else throw std::bad_alloc();
+//     }
+// }
+// void operator delete(void *rawMemory)
+// {
+//     if (rawMemory == 0) return;    // do nothing if the null
+//                                     // pointer is being deleted
+//     free(rawMemory);
+//     return;
+// }
 namespace ART_ROWEX {
 
     Tree::Tree(LoadKeyFunction loadKey) : root(new N256(0, {})), loadKey(loadKey) {
@@ -80,8 +103,7 @@ namespace ART_ROWEX {
         uint32_t level = 0;
         bool optimisticPrefixMatch = false;
         
-        uint64_t cached_key = *(uint64_t*)(&k->fkey[0]) & 0xffffffUL;
-        // _mm_prefetch(node, _MM_HINT_T0);
+        // uint64_t cached_key = *(uint64_t*)(&k->fkey[0]) & 0xffffffUL;
         // N *cached_node = (N*)ht.find(cached_key);
         // if (cached_node) {
         //     // printf("cached key %x\n", cached_key);
@@ -498,7 +520,7 @@ namespace ART_ROWEX {
         }
         return NULL;
     }
-
+    
     void Tree::insert(const Key *k, ThreadInfo &epocheInfo) {
 	//art_cout << "Inserting key " << k->fkey << std::endl;
         EpocheGuard epocheGuard(epocheInfo);
@@ -511,13 +533,14 @@ namespace ART_ROWEX {
         N *parentNode = nullptr;
         uint8_t parentKey, nodeKey = 0;
         uint32_t level = 0;
-
+        
         while (true) {
             parentNode = node;
             parentKey = nodeKey;
             node = nextNode;
             auto v = node->getVersion();
-
+            node->writeLockOrRestart(needRestart);
+            if (needRestart) goto restart;
             uint32_t nextLevel = level;
 
             uint8_t nonMatchingKey;
@@ -529,13 +552,14 @@ namespace ART_ROWEX {
                 case CheckPrefixPessimisticResult::NoMatch: {
                     assert(nextLevel < k->getKeyLen()); //prevent duplicate key
                     node->lockVersionOrRestart(v, needRestart);
+                    // node->writeLockOrRestart(needRestart);
                     if (needRestart) goto restart;
 
                     // 1) Create new node which will be parent of node, Set common prefix, level to this node
                     Prefix prefi = node->getPrefi();
                     prefi.prefixCount = nextLevel - level;
                     auto newNode = new N4(nextLevel, prefi);
-
+                    // auto newNode = new N4(nextLevel, prefi);
                     // 2)  add node and (tid, *k) as children
                     newNode->insert(k->fkey[nextLevel], N::setLeaf(k), false);
                     newNode->insert(nonMatchingKey, node, false);
@@ -569,7 +593,8 @@ namespace ART_ROWEX {
 #endif            
             
 	        if (nextNode == NULL) {
-                node->lockVersionOrRestart(v, needRestart);
+                // node->lockVersionOrRestart(v, needRestart);
+                node->writeLockOrRestart(needRestart);
                 if (needRestart) goto restart;
 
                 N::insertAndUnlock(node, parentNode, parentKey, nodeKey, N::setLeaf(k), epocheInfo, needRestart);
@@ -578,7 +603,8 @@ namespace ART_ROWEX {
             } 
             if (N::isLeaf(nextNode)) {
                 // printf("isleaf\n");
-                node->lockVersionOrRestart(v, needRestart);
+                // node->lockVersionOrRestart(v, needRestart);
+                node->writeLockOrRestart(needRestart);
                 if (needRestart) goto restart;
 		        Key *key;
                 key = N::getLeaf(nextNode);

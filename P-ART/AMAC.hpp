@@ -17,10 +17,12 @@ namespace ART_ROWEX {
     } 
     inline void prefetch_range_times(void *addr, size_t len) {
         uint8_t *cp = (uint8_t*)addr;
-        for (volatile int i = 0; i < len; i++) {
-            _mm_prefetch(cp, _MM_HINT_NTA);
-            cp += CACHELINE_SIZE;
-        }
+        // for (volatile int i = 0; i < len; i++) {
+        //     _mm_prefetch(cp, _MM_HINT_NTA);
+        //     cp += CACHELINE_SIZE;
+        // }
+        _mm_prefetch(cp, _MM_HINT_NTA);
+        _mm_prefetch(cp + CACHELINE_SIZE, _MM_HINT_NTA);
     } 
     enum Stages {INIT, READ_INIT, WRITE_INIT, READ_PROB, INSERT_PROB, INSERT_RESTART};
     struct State {

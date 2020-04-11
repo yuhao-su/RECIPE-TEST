@@ -1,39 +1,39 @@
 *********AMAC WORKLOAD_C UNIFORM*********
----THREAD * 1---
+---THREAD * 1 * 1---
 art, workloadc, randint, uniform, threads 1, batch size 16000000
-Throughput: load, 3.383192 ,ops/us
+Throughput: load, 3.372629 ,ops/us
 Restart Count, load 0
-Throughput: run, 2.661997 ,ops/us
+Throughput: run, 4.205251 ,ops/us
 Restart Count, run 0
 N: 24, N4: 64, N16: 168, N48: 664, N256: 2072
 Node Size Total: 987465912
 Node Number Total: 20946100
 Leaf Number: 16000000   N4 Number:4635719  N16 Number:277484  N48 Number:0 N256 Number:32897
----THREAD * 1---
+---THREAD * 1 * 2---
 art, workloadc, randint, uniform, threads 1, batch size 16000000
-Throughput: load, 3.375102 ,ops/us
+Throughput: load, 3.394365 ,ops/us
 Restart Count, load 0
-Throughput: run, 2.701837 ,ops/us
+Throughput: run, 4.201983 ,ops/us
 Restart Count, run 0
 N: 24, N4: 64, N16: 168, N48: 664, N256: 2072
 Node Size Total: 987465912
 Node Number Total: 20946100
 Leaf Number: 16000000   N4 Number:4635719  N16 Number:277484  N48 Number:0 N256 Number:32897
----THREAD * 1---
+---THREAD * 1 * 3---
 art, workloadc, randint, uniform, threads 1, batch size 16000000
-Throughput: load, 3.359218 ,ops/us
+Throughput: load, 3.393012 ,ops/us
 Restart Count, load 0
-Throughput: run, 2.677317 ,ops/us
+Throughput: run, 4.221831 ,ops/us
 Restart Count, run 0
 N: 24, N4: 64, N16: 168, N48: 664, N256: 2072
 Node Size Total: 987465912
 Node Number Total: 20946100
 Leaf Number: 16000000   N4 Number:4635719  N16 Number:277484  N48 Number:0 N256 Number:32897
----THREAD * 1---
+---THREAD * 1 * 4---
 art, workloadc, randint, uniform, threads 1, batch size 16000000
-Throughput: load, 3.334450 ,ops/us
+Throughput: load, 3.411194 ,ops/us
 Restart Count, load 0
-Throughput: run, 2.685141 ,ops/us
+Throughput: run, 4.260417 ,ops/us
 Restart Count, run 0
 N: 24, N4: 64, N16: 168, N48: 664, N256: 2072
 Node Size Total: 987465912
@@ -41,41 +41,41 @@ Node Number Total: 20946100
 Leaf Number: 16000000   N4 Number:4635719  N16 Number:277484  N48 Number:0 N256 Number:32897
 
 
----THREAD * 5---
+---THREAD * 5 * 1---
 art, workloadc, randint, uniform, threads 5, batch size 16000000
-Throughput: load, 11.685477 ,ops/us
+Throughput: load, 10.155925 ,ops/us
 Restart Count, load 0
-Throughput: run, 11.306709 ,ops/us
+Throughput: run, 12.284154 ,ops/us
 Restart Count, run 0
 N: 24, N4: 64, N16: 168, N48: 664, N256: 2072
 Node Size Total: 987465912
 Node Number Total: 20946100
 Leaf Number: 16000000   N4 Number:4635719  N16 Number:277484  N48 Number:0 N256 Number:32897
----THREAD * 5---
+---THREAD * 5 * 2---
 art, workloadc, randint, uniform, threads 5, batch size 16000000
-Throughput: load, 9.551925 ,ops/us
+Throughput: load, 9.611272 ,ops/us
 Restart Count, load 0
-Throughput: run, 11.603435 ,ops/us
+Throughput: run, 11.562214 ,ops/us
 Restart Count, run 0
 N: 24, N4: 64, N16: 168, N48: 664, N256: 2072
 Node Size Total: 987465912
 Node Number Total: 20946100
 Leaf Number: 16000000   N4 Number:4635719  N16 Number:277484  N48 Number:0 N256 Number:32897
----THREAD * 5---
+---THREAD * 5 * 3---
 art, workloadc, randint, uniform, threads 5, batch size 16000000
-Throughput: load, 11.699293 ,ops/us
+Throughput: load, 9.670438 ,ops/us
 Restart Count, load 0
-Throughput: run, 11.900105 ,ops/us
+Throughput: run, 11.771275 ,ops/us
 Restart Count, run 0
 N: 24, N4: 64, N16: 168, N48: 664, N256: 2072
 Node Size Total: 987465912
 Node Number Total: 20946100
 Leaf Number: 16000000   N4 Number:4635719  N16 Number:277484  N48 Number:0 N256 Number:32897
----THREAD * 5---
+---THREAD * 5 * 4---
 art, workloadc, randint, uniform, threads 5, batch size 16000000
-Throughput: load, 9.442586 ,ops/us
+Throughput: load, 9.692265 ,ops/us
 Restart Count, load 0
-Throughput: run, 11.885792 ,ops/us
+Throughput: run, 12.318580 ,ops/us
 Restart Count, run 0
 N: 24, N4: 64, N16: 168, N48: 664, N256: 2072
 Node Size Total: 987465912
@@ -83,41 +83,41 @@ Node Number Total: 20946100
 Leaf Number: 16000000   N4 Number:4635719  N16 Number:277484  N48 Number:0 N256 Number:32897
 
 
----THREAD * 10---
+---THREAD * 10 * 1---
 art, workloadc, randint, uniform, threads 10, batch size 16000000
-Throughput: load, 22.944595 ,ops/us
+Throughput: load, 22.694359 ,ops/us
 Restart Count, load 0
-Throughput: run, 27.692345 ,ops/us
+Throughput: run, 26.545398 ,ops/us
 Restart Count, run 0
 N: 24, N4: 64, N16: 168, N48: 664, N256: 2072
 Node Size Total: 987465912
 Node Number Total: 20946100
 Leaf Number: 16000000   N4 Number:4635719  N16 Number:277484  N48 Number:0 N256 Number:32897
----THREAD * 10---
+---THREAD * 10 * 2---
 art, workloadc, randint, uniform, threads 10, batch size 16000000
-Throughput: load, 22.893216 ,ops/us
+Throughput: load, 22.852964 ,ops/us
 Restart Count, load 0
-Throughput: run, 26.079955 ,ops/us
+Throughput: run, 22.834211 ,ops/us
 Restart Count, run 0
 N: 24, N4: 64, N16: 168, N48: 664, N256: 2072
 Node Size Total: 987465912
 Node Number Total: 20946100
 Leaf Number: 16000000   N4 Number:4635719  N16 Number:277484  N48 Number:0 N256 Number:32897
----THREAD * 10---
+---THREAD * 10 * 3---
 art, workloadc, randint, uniform, threads 10, batch size 16000000
-Throughput: load, 22.712335 ,ops/us
+Throughput: load, 23.392257 ,ops/us
 Restart Count, load 0
-Throughput: run, 25.779840 ,ops/us
+Throughput: run, 24.454437 ,ops/us
 Restart Count, run 0
 N: 24, N4: 64, N16: 168, N48: 664, N256: 2072
 Node Size Total: 987465912
 Node Number Total: 20946100
 Leaf Number: 16000000   N4 Number:4635719  N16 Number:277484  N48 Number:0 N256 Number:32897
----THREAD * 10---
+---THREAD * 10 * 4---
 art, workloadc, randint, uniform, threads 10, batch size 16000000
-Throughput: load, 22.855053 ,ops/us
+Throughput: load, 22.986557 ,ops/us
 Restart Count, load 0
-Throughput: run, 26.361228 ,ops/us
+Throughput: run, 27.522715 ,ops/us
 Restart Count, run 0
 N: 24, N4: 64, N16: 168, N48: 664, N256: 2072
 Node Size Total: 987465912
@@ -125,41 +125,41 @@ Node Number Total: 20946100
 Leaf Number: 16000000   N4 Number:4635719  N16 Number:277484  N48 Number:0 N256 Number:32897
 
 
----THREAD * 15---
+---THREAD * 15 * 1---
 art, workloadc, randint, uniform, threads 15, batch size 16000000
-Throughput: load, 30.500358 ,ops/us
+Throughput: load, 31.713186 ,ops/us
 Restart Count, load 0
-Throughput: run, 38.652291 ,ops/us
+Throughput: run, 40.411286 ,ops/us
 Restart Count, run 0
 N: 24, N4: 64, N16: 168, N48: 664, N256: 2072
 Node Size Total: 987465912
 Node Number Total: 20946100
 Leaf Number: 16000000   N4 Number:4635719  N16 Number:277484  N48 Number:0 N256 Number:32897
----THREAD * 15---
+---THREAD * 15 * 2---
 art, workloadc, randint, uniform, threads 15, batch size 16000000
-Throughput: load, 30.361453 ,ops/us
+Throughput: load, 30.977975 ,ops/us
 Restart Count, load 0
-Throughput: run, 37.691402 ,ops/us
+Throughput: run, 41.224151 ,ops/us
 Restart Count, run 0
 N: 24, N4: 64, N16: 168, N48: 664, N256: 2072
 Node Size Total: 987465912
 Node Number Total: 20946100
 Leaf Number: 16000000   N4 Number:4635719  N16 Number:277484  N48 Number:0 N256 Number:32897
----THREAD * 15---
+---THREAD * 15 * 3---
 art, workloadc, randint, uniform, threads 15, batch size 16000000
-Throughput: load, 31.434123 ,ops/us
+Throughput: load, 30.084802 ,ops/us
 Restart Count, load 0
-Throughput: run, 36.419590 ,ops/us
+Throughput: run, 43.427753 ,ops/us
 Restart Count, run 0
 N: 24, N4: 64, N16: 168, N48: 664, N256: 2072
 Node Size Total: 987465912
 Node Number Total: 20946100
 Leaf Number: 16000000   N4 Number:4635719  N16 Number:277484  N48 Number:0 N256 Number:32897
----THREAD * 15---
+---THREAD * 15 * 4---
 art, workloadc, randint, uniform, threads 15, batch size 16000000
-Throughput: load, 30.696327 ,ops/us
+Throughput: load, 30.736426 ,ops/us
 Restart Count, load 0
-Throughput: run, 37.334155 ,ops/us
+Throughput: run, 39.174400 ,ops/us
 Restart Count, run 0
 N: 24, N4: 64, N16: 168, N48: 664, N256: 2072
 Node Size Total: 987465912
@@ -167,41 +167,41 @@ Node Number Total: 20946100
 Leaf Number: 16000000   N4 Number:4635719  N16 Number:277484  N48 Number:0 N256 Number:32897
 
 
----THREAD * 20---
+---THREAD * 20 * 1---
 art, workloadc, randint, uniform, threads 20, batch size 16000000
-Throughput: load, 38.054013 ,ops/us
+Throughput: load, 38.622900 ,ops/us
 Restart Count, load 0
-Throughput: run, 43.144128 ,ops/us
+Throughput: run, 49.237435 ,ops/us
 Restart Count, run 0
 N: 24, N4: 64, N16: 168, N48: 664, N256: 2072
 Node Size Total: 987465912
 Node Number Total: 20946100
 Leaf Number: 16000000   N4 Number:4635719  N16 Number:277484  N48 Number:0 N256 Number:32897
----THREAD * 20---
+---THREAD * 20 * 2---
 art, workloadc, randint, uniform, threads 20, batch size 16000000
-Throughput: load, 37.419373 ,ops/us
+Throughput: load, 39.611706 ,ops/us
 Restart Count, load 0
-Throughput: run, 53.103748 ,ops/us
+Throughput: run, 51.941981 ,ops/us
 Restart Count, run 0
 N: 24, N4: 64, N16: 168, N48: 664, N256: 2072
 Node Size Total: 987465912
 Node Number Total: 20946100
 Leaf Number: 16000000   N4 Number:4635719  N16 Number:277484  N48 Number:0 N256 Number:32897
----THREAD * 20---
+---THREAD * 20 * 3---
 art, workloadc, randint, uniform, threads 20, batch size 16000000
-Throughput: load, 37.383702 ,ops/us
+Throughput: load, 38.926883 ,ops/us
 Restart Count, load 0
-Throughput: run, 48.778555 ,ops/us
+Throughput: run, 51.907941 ,ops/us
 Restart Count, run 0
 N: 24, N4: 64, N16: 168, N48: 664, N256: 2072
 Node Size Total: 987465912
 Node Number Total: 20946100
 Leaf Number: 16000000   N4 Number:4635719  N16 Number:277484  N48 Number:0 N256 Number:32897
----THREAD * 20---
+---THREAD * 20 * 4---
 art, workloadc, randint, uniform, threads 20, batch size 16000000
-Throughput: load, 37.420073 ,ops/us
+Throughput: load, 37.620238 ,ops/us
 Restart Count, load 0
-Throughput: run, 48.942086 ,ops/us
+Throughput: run, 47.332657 ,ops/us
 Restart Count, run 0
 N: 24, N4: 64, N16: 168, N48: 664, N256: 2072
 Node Size Total: 987465912
@@ -209,41 +209,41 @@ Node Number Total: 20946100
 Leaf Number: 16000000   N4 Number:4635719  N16 Number:277484  N48 Number:0 N256 Number:32897
 
 
----THREAD * 25---
+---THREAD * 25 * 1---
 art, workloadc, randint, uniform, threads 25, batch size 16000000
-Throughput: load, 40.646586 ,ops/us
+Throughput: load, 42.726826 ,ops/us
 Restart Count, load 0
-Throughput: run, 53.765790 ,ops/us
+Throughput: run, 59.760584 ,ops/us
 Restart Count, run 0
 N: 24, N4: 64, N16: 168, N48: 664, N256: 2072
 Node Size Total: 987465912
 Node Number Total: 20946100
 Leaf Number: 16000000   N4 Number:4635719  N16 Number:277484  N48 Number:0 N256 Number:32897
----THREAD * 25---
+---THREAD * 25 * 2---
 art, workloadc, randint, uniform, threads 25, batch size 16000000
-Throughput: load, 41.390514 ,ops/us
+Throughput: load, 43.197711 ,ops/us
 Restart Count, load 0
-Throughput: run, 53.763441 ,ops/us
+Throughput: run, 59.217807 ,ops/us
 Restart Count, run 0
 N: 24, N4: 64, N16: 168, N48: 664, N256: 2072
 Node Size Total: 987465912
 Node Number Total: 20946100
 Leaf Number: 16000000   N4 Number:4635719  N16 Number:277484  N48 Number:0 N256 Number:32897
----THREAD * 25---
+---THREAD * 25 * 3---
 art, workloadc, randint, uniform, threads 25, batch size 16000000
-Throughput: load, 35.941972 ,ops/us
+Throughput: load, 42.295146 ,ops/us
 Restart Count, load 0
-Throughput: run, 48.543689 ,ops/us
+Throughput: run, 62.624760 ,ops/us
 Restart Count, run 0
 N: 24, N4: 64, N16: 168, N48: 664, N256: 2072
 Node Size Total: 987465912
 Node Number Total: 20946100
 Leaf Number: 16000000   N4 Number:4635719  N16 Number:277484  N48 Number:0 N256 Number:32897
----THREAD * 25---
+---THREAD * 25 * 4---
 art, workloadc, randint, uniform, threads 25, batch size 16000000
-Throughput: load, 42.438967 ,ops/us
+Throughput: load, 42.306665 ,ops/us
 Restart Count, load 0
-Throughput: run, 53.565809 ,ops/us
+Throughput: run, 59.582328 ,ops/us
 Restart Count, run 0
 N: 24, N4: 64, N16: 168, N48: 664, N256: 2072
 Node Size Total: 987465912
@@ -251,41 +251,41 @@ Node Number Total: 20946100
 Leaf Number: 16000000   N4 Number:4635719  N16 Number:277484  N48 Number:0 N256 Number:32897
 
 
----THREAD * 30---
+---THREAD * 30 * 1---
 art, workloadc, randint, uniform, threads 30, batch size 16000000
-Throughput: load, 44.060021 ,ops/us
+Throughput: load, 46.760246 ,ops/us
 Restart Count, load 0
-Throughput: run, 56.708631 ,ops/us
+Throughput: run, 74.317671 ,ops/us
 Restart Count, run 0
 N: 24, N4: 64, N16: 168, N48: 664, N256: 2072
 Node Size Total: 987465912
 Node Number Total: 20946100
 Leaf Number: 16000000   N4 Number:4635719  N16 Number:277484  N48 Number:0 N256 Number:32897
----THREAD * 30---
+---THREAD * 30 * 2---
 art, workloadc, randint, uniform, threads 30, batch size 16000000
-Throughput: load, 47.096501 ,ops/us
+Throughput: load, 45.622649 ,ops/us
 Restart Count, load 0
-Throughput: run, 53.351295 ,ops/us
+Throughput: run, 73.180660 ,ops/us
 Restart Count, run 0
 N: 24, N4: 64, N16: 168, N48: 664, N256: 2072
 Node Size Total: 987465912
 Node Number Total: 20946100
 Leaf Number: 16000000   N4 Number:4635719  N16 Number:277484  N48 Number:0 N256 Number:32897
----THREAD * 30---
+---THREAD * 30 * 3---
 art, workloadc, randint, uniform, threads 30, batch size 16000000
-Throughput: load, 43.213228 ,ops/us
+Throughput: load, 46.488384 ,ops/us
 Restart Count, load 0
-Throughput: run, 55.133630 ,ops/us
+Throughput: run, 73.416722 ,ops/us
 Restart Count, run 0
 N: 24, N4: 64, N16: 168, N48: 664, N256: 2072
 Node Size Total: 987465912
 Node Number Total: 20946100
 Leaf Number: 16000000   N4 Number:4635719  N16 Number:277484  N48 Number:0 N256 Number:32897
----THREAD * 30---
+---THREAD * 30 * 4---
 art, workloadc, randint, uniform, threads 30, batch size 16000000
-Throughput: load, 43.275056 ,ops/us
+Throughput: load, 47.038210 ,ops/us
 Restart Count, load 0
-Throughput: run, 54.578264 ,ops/us
+Throughput: run, 69.990026 ,ops/us
 Restart Count, run 0
 N: 24, N4: 64, N16: 168, N48: 664, N256: 2072
 Node Size Total: 987465912
@@ -293,41 +293,41 @@ Node Number Total: 20946100
 Leaf Number: 16000000   N4 Number:4635719  N16 Number:277484  N48 Number:0 N256 Number:32897
 
 
----THREAD * 35---
+---THREAD * 35 * 1---
 art, workloadc, randint, uniform, threads 35, batch size 16000000
-Throughput: load, 42.962016 ,ops/us
+Throughput: load, 50.871331 ,ops/us
 Restart Count, load 0
-Throughput: run, 54.534734 ,ops/us
+Throughput: run, 80.808081 ,ops/us
 Restart Count, run 0
 N: 24, N4: 64, N16: 168, N48: 664, N256: 2072
 Node Size Total: 987465912
 Node Number Total: 20946100
 Leaf Number: 16000000   N4 Number:4635719  N16 Number:277484  N48 Number:0 N256 Number:32897
----THREAD * 35---
+---THREAD * 35 * 2---
 art, workloadc, randint, uniform, threads 35, batch size 16000000
-Throughput: load, 44.241058 ,ops/us
+Throughput: load, 50.049580 ,ops/us
 Restart Count, load 0
-Throughput: run, 55.461387 ,ops/us
+Throughput: run, 80.796655 ,ops/us
 Restart Count, run 0
 N: 24, N4: 64, N16: 168, N48: 664, N256: 2072
 Node Size Total: 987465912
 Node Number Total: 20946100
 Leaf Number: 16000000   N4 Number:4635719  N16 Number:277484  N48 Number:0 N256 Number:32897
----THREAD * 35---
+---THREAD * 35 * 3---
 art, workloadc, randint, uniform, threads 35, batch size 16000000
-Throughput: load, 44.082478 ,ops/us
+Throughput: load, 50.216086 ,ops/us
 Restart Count, load 0
-Throughput: run, 56.522722 ,ops/us
+Throughput: run, 81.453953 ,ops/us
 Restart Count, run 0
 N: 24, N4: 64, N16: 168, N48: 664, N256: 2072
 Node Size Total: 987465912
 Node Number Total: 20946100
 Leaf Number: 16000000   N4 Number:4635719  N16 Number:277484  N48 Number:0 N256 Number:32897
----THREAD * 35---
+---THREAD * 35 * 4---
 art, workloadc, randint, uniform, threads 35, batch size 16000000
-Throughput: load, 46.407885 ,ops/us
+Throughput: load, 49.270944 ,ops/us
 Restart Count, load 0
-Throughput: run, 55.913167 ,ops/us
+Throughput: run, 80.527860 ,ops/us
 Restart Count, run 0
 N: 24, N4: 64, N16: 168, N48: 664, N256: 2072
 Node Size Total: 987465912
@@ -335,80 +335,81 @@ Node Number Total: 20946100
 Leaf Number: 16000000   N4 Number:4635719  N16 Number:277484  N48 Number:0 N256 Number:32897
 
 
----THREAD * 40---
+---THREAD * 40 * 1---
 art, workloadc, randint, uniform, threads 40, batch size 16000000
-Throughput: load, 47.786585 ,ops/us
+Throughput: load, 52.618597 ,ops/us
 Restart Count, load 0
-Throughput: run, 58.610850 ,ops/us
+Throughput: run, 87.745757 ,ops/us
 Restart Count, run 0
 N: 24, N4: 64, N16: 168, N48: 664, N256: 2072
 Node Size Total: 987465912
 Node Number Total: 20946100
 Leaf Number: 16000000   N4 Number:4635719  N16 Number:277484  N48 Number:0 N256 Number:32897
----THREAD * 40---
+---THREAD * 40 * 2---
 art, workloadc, randint, uniform, threads 40, batch size 16000000
-Throughput: load, 47.693142 ,ops/us
+Throughput: load, 52.783331 ,ops/us
 Restart Count, load 0
-Throughput: run, 58.066951 ,ops/us
+Throughput: run, 87.344826 ,ops/us
 Restart Count, run 0
 N: 24, N4: 64, N16: 168, N48: 664, N256: 2072
 Node Size Total: 987465912
 Node Number Total: 20946100
 Leaf Number: 16000000   N4 Number:4635719  N16 Number:277484  N48 Number:0 N256 Number:32897
----THREAD * 40---
+---THREAD * 40 * 3---
 art, workloadc, randint, uniform, threads 40, batch size 16000000
-Throughput: load, 44.804624 ,ops/us
+Throughput: load, 52.087403 ,ops/us
 Restart Count, load 0
-Throughput: run, 58.586813 ,ops/us
+Throughput: run, 86.017806 ,ops/us
 Restart Count, run 0
 N: 24, N4: 64, N16: 168, N48: 664, N256: 2072
 Node Size Total: 987465912
 Node Number Total: 20946100
 Leaf Number: 16000000   N4 Number:4635719  N16 Number:277484  N48 Number:0 N256 Number:32897
----THREAD * 40---
+---THREAD * 40 * 4---
 art, workloadc, randint, uniform, threads 40, batch size 16000000
-Throughput: load, 48.074756 ,ops/us
+Throughput: load, 50.790910 ,ops/us
 Restart Count, load 0
-Throughput: run, 59.074160 ,ops/us
+Throughput: run, 85.410772 ,ops/us
 Restart Count, run 0
 N: 24, N4: 64, N16: 168, N48: 664, N256: 2072
 Node Size Total: 987465912
 Node Number Total: 20946100
 Leaf Number: 16000000   N4 Number:4635719  N16 Number:277484  N48 Number:0 N256 Number:32897
+
 
 *********ART_AMAC WORKLOAD_C UNIFORM*********
 ---THREAD * 1 * 1---
 art_amac, workloadc, randint, uniform, threads 1, batch size 16000000
-Throughput: load, 3.378843 ,ops/us
+Throughput: load, 3.440055 ,ops/us
 Restart Count, load 0
-Throughput: run, 3.681354 ,ops/us
+Throughput: run, 3.813687 ,ops/us
 Restart Count, run 0
 N: 24, N4: 64, N16: 168, N48: 664, N256: 2072
 Node Size Total: 987465912
 Node Number: 20946100
 ---THREAD * 1 * 2---
 art_amac, workloadc, randint, uniform, threads 1, batch size 16000000
-Throughput: load, 3.384670 ,ops/us
+Throughput: load, 3.428547 ,ops/us
 Restart Count, load 0
-Throughput: run, 3.694450 ,ops/us
+Throughput: run, 3.775808 ,ops/us
 Restart Count, run 0
 N: 24, N4: 64, N16: 168, N48: 664, N256: 2072
 Node Size Total: 987465912
 Node Number: 20946100
 ---THREAD * 1 * 3---
 art_amac, workloadc, randint, uniform, threads 1, batch size 16000000
-Throughput: load, 3.392112 ,ops/us
+Throughput: load, 3.426887 ,ops/us
 Restart Count, load 0
-Throughput: run, 3.666636 ,ops/us
+Throughput: run, 3.767238 ,ops/us
 Restart Count, run 0
 N: 24, N4: 64, N16: 168, N48: 664, N256: 2072
 Node Size Total: 987465912
 Node Number: 20946100
 ---THREAD * 1 * 4---
 art_amac, workloadc, randint, uniform, threads 1, batch size 16000000
-Throughput: load, 3.398853 ,ops/us
+Throughput: load, 3.442382 ,ops/us
 Restart Count, load 0
-Throughput: run, 3.684428 ,ops/us
+Throughput: run, 3.751820 ,ops/us
 Restart Count, run 0
 N: 24, N4: 64, N16: 168, N48: 664, N256: 2072
 Node Size Total: 987465912
@@ -417,36 +418,36 @@ Node Number: 20946100
 
 ---THREAD * 5 * 1---
 art_amac, workloadc, randint, uniform, threads 5, batch size 16000000
-Throughput: load, 11.524198 ,ops/us
+Throughput: load, 12.036800 ,ops/us
 Restart Count, load 0
-Throughput: run, 18.240166 ,ops/us
+Throughput: run, 19.054583 ,ops/us
 Restart Count, run 0
 N: 24, N4: 64, N16: 168, N48: 664, N256: 2072
 Node Size Total: 987465912
 Node Number: 20946100
 ---THREAD * 5 * 2---
 art_amac, workloadc, randint, uniform, threads 5, batch size 16000000
-Throughput: load, 11.883550 ,ops/us
+Throughput: load, 10.223988 ,ops/us
 Restart Count, load 0
-Throughput: run, 18.469246 ,ops/us
+Throughput: run, 16.984110 ,ops/us
 Restart Count, run 0
 N: 24, N4: 64, N16: 168, N48: 664, N256: 2072
 Node Size Total: 987465912
 Node Number: 20946100
 ---THREAD * 5 * 3---
 art_amac, workloadc, randint, uniform, threads 5, batch size 16000000
-Throughput: load, 11.913342 ,ops/us
+Throughput: load, 9.886381 ,ops/us
 Restart Count, load 0
-Throughput: run, 18.403306 ,ops/us
+Throughput: run, 21.461933 ,ops/us
 Restart Count, run 0
 N: 24, N4: 64, N16: 168, N48: 664, N256: 2072
 Node Size Total: 987465912
 Node Number: 20946100
 ---THREAD * 5 * 4---
 art_amac, workloadc, randint, uniform, threads 5, batch size 16000000
-Throughput: load, 11.693992 ,ops/us
+Throughput: load, 10.467621 ,ops/us
 Restart Count, load 0
-Throughput: run, 17.801256 ,ops/us
+Throughput: run, 17.142735 ,ops/us
 Restart Count, run 0
 N: 24, N4: 64, N16: 168, N48: 664, N256: 2072
 Node Size Total: 987465912
@@ -455,36 +456,36 @@ Node Number: 20946100
 
 ---THREAD * 10 * 1---
 art_amac, workloadc, randint, uniform, threads 10, batch size 16000000
-Throughput: load, 22.834146 ,ops/us
+Throughput: load, 23.539451 ,ops/us
 Restart Count, load 0
-Throughput: run, 35.889165 ,ops/us
+Throughput: run, 44.618083 ,ops/us
 Restart Count, run 0
 N: 24, N4: 64, N16: 168, N48: 664, N256: 2072
 Node Size Total: 987465912
 Node Number: 20946100
 ---THREAD * 10 * 2---
 art_amac, workloadc, randint, uniform, threads 10, batch size 16000000
-Throughput: load, 22.645889 ,ops/us
+Throughput: load, 23.400058 ,ops/us
 Restart Count, load 0
-Throughput: run, 38.190624 ,ops/us
+Throughput: run, 47.687172 ,ops/us
 Restart Count, run 0
 N: 24, N4: 64, N16: 168, N48: 664, N256: 2072
 Node Size Total: 987465912
 Node Number: 20946100
 ---THREAD * 10 * 3---
 art_amac, workloadc, randint, uniform, threads 10, batch size 16000000
-Throughput: load, 22.568428 ,ops/us
+Throughput: load, 23.570695 ,ops/us
 Restart Count, load 0
-Throughput: run, 43.477670 ,ops/us
+Throughput: run, 46.342021 ,ops/us
 Restart Count, run 0
 N: 24, N4: 64, N16: 168, N48: 664, N256: 2072
 Node Size Total: 987465912
 Node Number: 20946100
 ---THREAD * 10 * 4---
 art_amac, workloadc, randint, uniform, threads 10, batch size 16000000
-Throughput: load, 22.911541 ,ops/us
+Throughput: load, 23.392805 ,ops/us
 Restart Count, load 0
-Throughput: run, 39.149957 ,ops/us
+Throughput: run, 46.165920 ,ops/us
 Restart Count, run 0
 N: 24, N4: 64, N16: 168, N48: 664, N256: 2072
 Node Size Total: 987465912
@@ -493,36 +494,36 @@ Node Number: 20946100
 
 ---THREAD * 15 * 1---
 art_amac, workloadc, randint, uniform, threads 15, batch size 16000000
-Throughput: load, 31.604376 ,ops/us
+Throughput: load, 31.286052 ,ops/us
 Restart Count, load 0
-Throughput: run, 53.861354 ,ops/us
+Throughput: run, 72.443098 ,ops/us
 Restart Count, run 0
 N: 24, N4: 64, N16: 168, N48: 664, N256: 2072
 Node Size Total: 987465912
 Node Number: 20946100
 ---THREAD * 15 * 2---
 art_amac, workloadc, randint, uniform, threads 15, batch size 16000000
-Throughput: load, 29.852027 ,ops/us
+Throughput: load, 30.297407 ,ops/us
 Restart Count, load 0
-Throughput: run, 50.128768 ,ops/us
+Throughput: run, 56.674483 ,ops/us
 Restart Count, run 0
 N: 24, N4: 64, N16: 168, N48: 664, N256: 2072
 Node Size Total: 987465912
 Node Number: 20946100
 ---THREAD * 15 * 3---
 art_amac, workloadc, randint, uniform, threads 15, batch size 16000000
-Throughput: load, 31.574066 ,ops/us
+Throughput: load, 30.385035 ,ops/us
 Restart Count, load 0
-Throughput: run, 51.363212 ,ops/us
+Throughput: run, 58.979000 ,ops/us
 Restart Count, run 0
 N: 24, N4: 64, N16: 168, N48: 664, N256: 2072
 Node Size Total: 987465912
 Node Number: 20946100
 ---THREAD * 15 * 4---
 art_amac, workloadc, randint, uniform, threads 15, batch size 16000000
-Throughput: load, 30.777931 ,ops/us
+Throughput: load, 30.856936 ,ops/us
 Restart Count, load 0
-Throughput: run, 52.128980 ,ops/us
+Throughput: run, 56.950243 ,ops/us
 Restart Count, run 0
 N: 24, N4: 64, N16: 168, N48: 664, N256: 2072
 Node Size Total: 987465912
@@ -531,36 +532,36 @@ Node Number: 20946100
 
 ---THREAD * 20 * 1---
 art_amac, workloadc, randint, uniform, threads 20, batch size 16000000
-Throughput: load, 37.657692 ,ops/us
+Throughput: load, 37.961649 ,ops/us
 Restart Count, load 0
-Throughput: run, 54.406964 ,ops/us
+Throughput: run, 66.867548 ,ops/us
 Restart Count, run 0
 N: 24, N4: 64, N16: 168, N48: 664, N256: 2072
 Node Size Total: 987465912
 Node Number: 20946100
 ---THREAD * 20 * 2---
 art_amac, workloadc, randint, uniform, threads 20, batch size 16000000
-Throughput: load, 36.770958 ,ops/us
+Throughput: load, 37.684921 ,ops/us
 Restart Count, load 0
-Throughput: run, 53.816425 ,ops/us
+Throughput: run, 65.208443 ,ops/us
 Restart Count, run 0
 N: 24, N4: 64, N16: 168, N48: 664, N256: 2072
 Node Size Total: 987465912
 Node Number: 20946100
 ---THREAD * 20 * 3---
 art_amac, workloadc, randint, uniform, threads 20, batch size 16000000
-Throughput: load, 35.787458 ,ops/us
+Throughput: load, 37.978049 ,ops/us
 Restart Count, load 0
-Throughput: run, 65.489493 ,ops/us
+Throughput: run, 66.466713 ,ops/us
 Restart Count, run 0
 N: 24, N4: 64, N16: 168, N48: 664, N256: 2072
 Node Size Total: 987465912
 Node Number: 20946100
 ---THREAD * 20 * 4---
 art_amac, workloadc, randint, uniform, threads 20, batch size 16000000
-Throughput: load, 37.901400 ,ops/us
+Throughput: load, 38.984550 ,ops/us
 Restart Count, load 0
-Throughput: run, 57.185746 ,ops/us
+Throughput: run, 69.572780 ,ops/us
 Restart Count, run 0
 N: 24, N4: 64, N16: 168, N48: 664, N256: 2072
 Node Size Total: 987465912
@@ -569,36 +570,36 @@ Node Number: 20946100
 
 ---THREAD * 25 * 1---
 art_amac, workloadc, randint, uniform, threads 25, batch size 16000000
-Throughput: load, 39.151298 ,ops/us
+Throughput: load, 42.984869 ,ops/us
 Restart Count, load 0
-Throughput: run, 51.258065 ,ops/us
+Throughput: run, 92.726208 ,ops/us
 Restart Count, run 0
 N: 24, N4: 64, N16: 168, N48: 664, N256: 2072
 Node Size Total: 987465912
 Node Number: 20946100
 ---THREAD * 25 * 2---
 art_amac, workloadc, randint, uniform, threads 25, batch size 16000000
-Throughput: load, 41.496359 ,ops/us
+Throughput: load, 42.637673 ,ops/us
 Restart Count, load 0
-Throughput: run, 65.549592 ,ops/us
+Throughput: run, 94.369670 ,ops/us
 Restart Count, run 0
 N: 24, N4: 64, N16: 168, N48: 664, N256: 2072
 Node Size Total: 987465912
 Node Number: 20946100
 ---THREAD * 25 * 3---
 art_amac, workloadc, randint, uniform, threads 25, batch size 16000000
-Throughput: load, 41.721426 ,ops/us
+Throughput: load, 43.095670 ,ops/us
 Restart Count, load 0
-Throughput: run, 62.047249 ,ops/us
+Throughput: run, 88.261740 ,ops/us
 Restart Count, run 0
 N: 24, N4: 64, N16: 168, N48: 664, N256: 2072
 Node Size Total: 987465912
 Node Number: 20946100
 ---THREAD * 25 * 4---
 art_amac, workloadc, randint, uniform, threads 25, batch size 16000000
-Throughput: load, 41.380666 ,ops/us
+Throughput: load, 42.169850 ,ops/us
 Restart Count, load 0
-Throughput: run, 57.453723 ,ops/us
+Throughput: run, 74.092597 ,ops/us
 Restart Count, run 0
 N: 24, N4: 64, N16: 168, N48: 664, N256: 2072
 Node Size Total: 987465912
@@ -607,36 +608,36 @@ Node Number: 20946100
 
 ---THREAD * 30 * 1---
 art_amac, workloadc, randint, uniform, threads 30, batch size 16000000
-Throughput: load, 41.730567 ,ops/us
+Throughput: load, 47.712200 ,ops/us
 Restart Count, load 0
-Throughput: run, 55.894611 ,ops/us
+Throughput: run, 97.258525 ,ops/us
 Restart Count, run 0
 N: 24, N4: 64, N16: 168, N48: 664, N256: 2072
 Node Size Total: 987465912
 Node Number: 20946100
 ---THREAD * 30 * 2---
 art_amac, workloadc, randint, uniform, threads 30, batch size 16000000
-Throughput: load, 42.728880 ,ops/us
+Throughput: load, 47.276993 ,ops/us
 Restart Count, load 0
-Throughput: run, 59.254212 ,ops/us
+Throughput: run, 97.993581 ,ops/us
 Restart Count, run 0
 N: 24, N4: 64, N16: 168, N48: 664, N256: 2072
 Node Size Total: 987465912
 Node Number: 20946100
 ---THREAD * 30 * 3---
 art_amac, workloadc, randint, uniform, threads 30, batch size 16000000
-Throughput: load, 42.996189 ,ops/us
+Throughput: load, 47.205577 ,ops/us
 Restart Count, load 0
-Throughput: run, 55.355852 ,ops/us
+Throughput: run, 97.634201 ,ops/us
 Restart Count, run 0
 N: 24, N4: 64, N16: 168, N48: 664, N256: 2072
 Node Size Total: 987465912
 Node Number: 20946100
 ---THREAD * 30 * 4---
 art_amac, workloadc, randint, uniform, threads 30, batch size 16000000
-Throughput: load, 43.922499 ,ops/us
+Throughput: load, 49.166021 ,ops/us
 Restart Count, load 0
-Throughput: run, 56.613521 ,ops/us
+Throughput: run, 87.995732 ,ops/us
 Restart Count, run 0
 N: 24, N4: 64, N16: 168, N48: 664, N256: 2072
 Node Size Total: 987465912
@@ -645,36 +646,36 @@ Node Number: 20946100
 
 ---THREAD * 35 * 1---
 art_amac, workloadc, randint, uniform, threads 35, batch size 16000000
-Throughput: load, 43.582361 ,ops/us
+Throughput: load, 50.224440 ,ops/us
 Restart Count, load 0
-Throughput: run, 57.691337 ,ops/us
+Throughput: run, 103.296448 ,ops/us
 Restart Count, run 0
 N: 24, N4: 64, N16: 168, N48: 664, N256: 2072
 Node Size Total: 987465912
 Node Number: 20946100
 ---THREAD * 35 * 2---
 art_amac, workloadc, randint, uniform, threads 35, batch size 16000000
-Throughput: load, 45.128390 ,ops/us
+Throughput: load, 49.960344 ,ops/us
 Restart Count, load 0
-Throughput: run, 59.502116 ,ops/us
+Throughput: run, 103.537756 ,ops/us
 Restart Count, run 0
 N: 24, N4: 64, N16: 168, N48: 664, N256: 2072
 Node Size Total: 987465912
 Node Number: 20946100
 ---THREAD * 35 * 3---
 art_amac, workloadc, randint, uniform, threads 35, batch size 16000000
-Throughput: load, 44.284406 ,ops/us
+Throughput: load, 49.577199 ,ops/us
 Restart Count, load 0
-Throughput: run, 60.185446 ,ops/us
+Throughput: run, 102.724775 ,ops/us
 Restart Count, run 0
 N: 24, N4: 64, N16: 168, N48: 664, N256: 2072
 Node Size Total: 987465912
 Node Number: 20946100
 ---THREAD * 35 * 4---
 art_amac, workloadc, randint, uniform, threads 35, batch size 16000000
-Throughput: load, 43.838499 ,ops/us
+Throughput: load, 49.269578 ,ops/us
 Restart Count, load 0
-Throughput: run, 52.810335 ,ops/us
+Throughput: run, 103.048961 ,ops/us
 Restart Count, run 0
 N: 24, N4: 64, N16: 168, N48: 664, N256: 2072
 Node Size Total: 987465912
@@ -683,36 +684,36 @@ Node Number: 20946100
 
 ---THREAD * 40 * 1---
 art_amac, workloadc, randint, uniform, threads 40, batch size 16000000
-Throughput: load, 47.946683 ,ops/us
+Throughput: load, 51.644890 ,ops/us
 Restart Count, load 0
-Throughput: run, 62.714110 ,ops/us
+Throughput: run, 106.693696 ,ops/us
 Restart Count, run 0
 N: 24, N4: 64, N16: 168, N48: 664, N256: 2072
 Node Size Total: 987465912
 Node Number: 20946100
 ---THREAD * 40 * 2---
 art_amac, workloadc, randint, uniform, threads 40, batch size 16000000
-Throughput: load, 41.149829 ,ops/us
+Throughput: load, 52.778282 ,ops/us
 Restart Count, load 0
-Throughput: run, 59.168534 ,ops/us
+Throughput: run, 107.743382 ,ops/us
 Restart Count, run 0
 N: 24, N4: 64, N16: 168, N48: 664, N256: 2072
 Node Size Total: 987465912
 Node Number: 20946100
 ---THREAD * 40 * 3---
 art_amac, workloadc, randint, uniform, threads 40, batch size 16000000
-Throughput: load, 47.544476 ,ops/us
+Throughput: load, 53.114502 ,ops/us
 Restart Count, load 0
-Throughput: run, 60.418626 ,ops/us
+Throughput: run, 106.871147 ,ops/us
 Restart Count, run 0
 N: 24, N4: 64, N16: 168, N48: 664, N256: 2072
 Node Size Total: 987465912
 Node Number: 20946100
 ---THREAD * 40 * 4---
 art_amac, workloadc, randint, uniform, threads 40, batch size 16000000
-Throughput: load, 47.820863 ,ops/us
+Throughput: load, 53.290168 ,ops/us
 Restart Count, load 0
-Throughput: run, 62.415154 ,ops/us
+Throughput: run, 104.625767 ,ops/us
 Restart Count, run 0
 N: 24, N4: 64, N16: 168, N48: 664, N256: 2072
 Node Size Total: 987465912

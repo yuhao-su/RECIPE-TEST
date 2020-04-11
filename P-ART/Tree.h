@@ -62,7 +62,7 @@ namespace ART_ROWEX {
             NoMatch,
             SkippedLevel
         };
-         CheckPrefixResult checkPrefix(N* n, const Key *k, uint32_t &level);
+        CheckPrefixResult checkPrefix(N* n, const Key *k, uint32_t &level);
 
         static CheckPrefixPessimisticResult checkPrefixPessimistic(N *n, const Key *k, uint32_t &level,
                                                                    uint8_t &nonMatchingKey,
