@@ -12,7 +12,7 @@ namespace ART_ROWEX {
     inline void prefetch_range(void *addr, size_t len) {
         uint8_t *cp;
         uint8_t *end = (uint8_t*)addr + len;
-        for (cp = (uint8_t*)addr; cp < end; cp += CACHELINE_SIZE)
+        for (cp = (uint8_t*)addr; cp < end; cp += 4 * CACHELINE_SIZE)
             _mm_prefetch(cp, _MM_HINT_NTA);
     } 
     inline void prefetch_range_times(void *addr, size_t len) {
@@ -22,9 +22,11 @@ namespace ART_ROWEX {
         //     cp += CACHELINE_SIZE;
         // }
         _mm_prefetch(cp, _MM_HINT_NTA);
-        _mm_prefetch(cp + CACHELINE_SIZE, _MM_HINT_NTA);
+        // _mm_prefetch(cp + CACHELINE_SIZE, _MM_HINT_NTA);
     } 
-    enum Stages {INIT, READ_INIT, WRITE_INIT, READ_PROB, INSERT_PROB, INSERT_RESTART};
+    enum Stages {INIT, READ_INIT, WRITE_INIT, READ_PREF_CACHE, READ_CACHED,
+        READ_PROB, READ_PREF_POS, INSERT_PROB, INSERT_RESTART, MAKE_CACHE_PREF,
+        MAKE_CACHE, INSERT_SPIN, INSERT_PREF_POS};
     struct State {
         Key* key;
         void* node;
@@ -32,8 +34,11 @@ namespace ART_ROWEX {
         void* nextNode;
         uint8_t parentKey, nodeKey;
         uint32_t level;
-        uint64_t value;
+        uint64_t v;
+        uint8_t spin_rounds;
+        // uint64_t value;
         uint64_t id;
+        // bool node_cached;
         bool needRestart;
         bool optimisticPrefixMatch;
         Stages stage;

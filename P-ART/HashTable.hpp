@@ -14,7 +14,7 @@ static inline bool try_lock(bool* lkp) {
     return __sync_bool_compare_and_swap(lkp, 0, 1);
 }
 
-
+const uint64_t CACHE_KEY_MASK = 0xffffffUL;
 
 class HashTable
 {
@@ -46,6 +46,10 @@ public:
             ret_addr = NULL; 
         return ret_addr;
     } 
+    HashItem* get_ptr(const uint64_t tree_key) const{
+        uint64_t h_key = tree_key % this->size;
+        return items + h_key;
+    } 
     bool check(const uint64_t tree_key) const{
         uint64_t h_key = tree_key % this->size;
         return (tree_key == items[h_key].t_key.load(std::memory_order_relaxed));
@@ -75,6 +79,10 @@ public:
     volatile void* find(const uint64_t tree_key) const{
         uint64_t h_key = tree_key % this->size;
         return items[h_key];
+    } 
+    HashItem* get_ptr(const uint64_t tree_key) const{
+        uint64_t h_key = tree_key % this->size;
+        return items + h_key;
     } 
     bool check(const uint64_t tree_key) const{
         uint64_t h_key = tree_key % this->size;

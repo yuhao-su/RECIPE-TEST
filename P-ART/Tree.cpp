@@ -120,6 +120,7 @@ namespace ART_ROWEX {
             //     // node->cached = 1;
             //     // restart_cnt++;
             // }
+            // printf("%llx\n", node);
             switch (checkPrefix(node, k, level)) { // increases level
                 case CheckPrefixResult::NoMatch:
                     return NULL;
@@ -131,7 +132,9 @@ namespace ART_ROWEX {
                         return NULL;
                     }
                     node = N::getChild(k->fkey[level], node);
-                    
+#ifdef AMAC_DYNAMIC
+                    node = N::getNode(node);
+#endif
                     if (node == nullptr) {
                         return NULL;
                     }
@@ -157,24 +160,29 @@ namespace ART_ROWEX {
         y++;
         num_finished++;
     }
-    void Tree::exec_acmc(Key **key, void **ret_val, std::vector<int> &ops, 
+    static inline void return_insert(State &state, uint64_t &num_finished, uint64_t &y) {
+        state.stage = INIT;
+        y++;
+        num_finished++;
+    }
+    uint64_t Tree::exec_acmc(Key **key, void **ret_val, std::vector<int> &ops, bool load_stage,
         uint64_t offset, uint64_t len, ThreadInfo &threadEpocheInfo) {
         uint64_t num_finished = 0, x = 0, y = 0;
         uint32_t group_size = 30;
+        uint64_t rstcnt = 0;
         Group buff(group_size);
+        EpocheGuard epocheGuard(threadEpocheInfo);
+
+        // printf("offset；%d\tlen: %d\n", offset, len);
         while (num_finished < len) {
             State &state = buff.next_state();
             // std::cout<<num_finished<<std::endl;
-            
             if (state.stage == INIT && x < len) {
                 state.key   = key[offset + x];
                 state.level = 0;
                 state.id    = offset + x;
-                if (ops[offset + x] == OP_READ) {
-                    state.optimisticPrefixMatch = false;
-                    state.stage = READ_PROB;
-                    state.node = root;
-                } else if(ops[offset + x] == OP_INSERT) {
+                // state.node_cached = false;
+                if(ops[offset + x] == OP_INSERT || load_stage) {
                     state.stage       = INSERT_PROB;
                     state.needRestart = false;
                     state.node        = nullptr;
@@ -182,14 +190,19 @@ namespace ART_ROWEX {
                     state.parentNode  = nullptr;
                     state.parentKey   = 0; 
                     state.nodeKey     = 0;
+                } else if (ops[offset + x] == OP_READ) {
+                    state.stage = READ_PROB;///
+                    state.optimisticPrefixMatch = false;
+                    state.node = root;
                 }
                 x++;
-                prefetch_range(state.key, 64);
-                prefetch_range(state.node, 64);
-            } else if (state.stage == INSERT_RESTART) {
+                // prefetch_range(state.key, 64);
+                // prefetch_range(state.node, 64);
+            } 
+            else if (state.stage == INSERT_RESTART) {
                 state.stage       = INSERT_PROB;
                 state.level       = 0;
-                state.id          = offset + x;
+                // state.node_cached = false;
                 state.needRestart = false;
                 state.node        = nullptr;
                 state.nextNode    = root;
@@ -197,7 +210,48 @@ namespace ART_ROWEX {
                 state.parentKey   = 0; 
                 state.nodeKey     = 0;
             } 
+            // else if (state.stage == READ_PREF_CACHE) {
+            //     uint64_t cached_key = *(uint64_t*)(&state.key->fkey[0]) & CACHE_KEY_MASK;
+            //     void *p = (void*)ht.get_ptr(cached_key);
+            //     prefetch_range(p, 64);
+            //     state.stage = READ_CACHED;
+            // } else if (state.stage == READ_CACHED) {
+            //     uint64_t cached_key = *(uint64_t*)(&state.key->fkey[0]) & CACHE_KEY_MASK;
+            //     N *cached_node = (N*)ht.find(cached_key);
+            //     if (cached_node) {
+            //         // printf("cached key %x\n", cached_key);
+            //         // restart_cnt++;
+            //         state.node = cached_node;
+            //         state.level = 3;
+            //         state.node_cached = true;
+            //         prefetch_range(state.node, 64);
+            //     }
+            //     state.stage = READ_PROB;
+            // } else if (state.stage == MAKE_CACHE_PREF) {
+            //     uint64_t cached_key = *(uint64_t*)(&state.key->fkey[0]) & CACHE_KEY_MASK;
+            //     void *p = (void*)ht.get_ptr(cached_key);
+            //     prefetch_range(p, 64);
+            //     state.stage = MAKE_CACHE;
+            // } else if (state.stage == MAKE_CACHE) {
+            //     uint64_t cached_key = *(uint64_t*)(&state.key->fkey[0]) & CACHE_KEY_MASK;
+            //     // printf("level 4 key %x\n", cached_key);
+            //     ht.insert(cached_key, state.node);
+            //     // node->cached = 1;
+            //     // restart_cnt++;
+            //     state.node_cached = true; 
+            //     state.stage = READ_PROB;
+                
+            // }
             else if (state.stage == READ_PROB) {
+                // if(unlikely(state.level == 3 && !state.node_cached)){
+                //     uint64_t cached_key = *(uint64_t*)(&state.key->fkey[0]) & CACHE_KEY_MASK;
+                //     void *p = (void*)ht.get_ptr(cached_key);
+                //     state.stage = MAKE_CACHE;
+                //     prefetch_range(p, 64);
+                //     continue;
+                // }
+                
+
                 // check if it is leaf node
                 // printf("state: %d, level: %d\n", state.id, state.level);
                 if (N::isLeaf((N*)state.node)) {
@@ -206,7 +260,6 @@ namespace ART_ROWEX {
                     // return;
                     Key *ret = N::getLeaf((N*)state.node);
                     if (state.level < state.key->getKeyLen() - 1 || state.optimisticPrefixMatch) {
-                        // restart_cnt++;
                         return_val(state, num_finished, y, offset, ret_val, checkKey(ret, state.key));
                         continue;
                     } else {
@@ -215,6 +268,9 @@ namespace ART_ROWEX {
                     }
                 }
                 NTypes nextNodeType;
+                NTypes thisNodeType = ((N*)state.node)->getType();
+
+                uint32_t level = state.level;
                 switch (checkPrefix((N*)state.node, state.key, state.level)) { // increases level
                     case CheckPrefixResult::NoMatch: {
                         return_val(state, num_finished, y, offset, ret_val, NULL);
@@ -228,6 +284,7 @@ namespace ART_ROWEX {
                             return_val(state, num_finished, y, offset, ret_val, NULL);
                             continue;
                         }
+                        
                         state.node = N::getChild(state.key->fkey[state.level], (N*)state.node);
 #ifdef AMAC_DYNAMIC
                         nextNodeType = N::getNodeType((N*)state.node);
@@ -240,32 +297,92 @@ namespace ART_ROWEX {
                     }
                 }
                 state.level++;
-                // prefetch_range(state.node, 64);
+#ifdef AMAC_DYNAMIC
+                if (nextNodeType == NTypes::N256) {
+                    prefetch_range((uint8_t*)state.node + 24 + 8 * state.key->fkey[state.level], 64);
+                } else if (nextNodeType == NTypes::N48) {
+                    prefetch_range((uint8_t*)state.node + 24 + state.key->fkey[state.level], 64);
+                    state.stage = READ_PREF_POS;
+                } else if (nextNodeType == NTypes::N16) {
+                    // state.stage = READ_PREF_POS;
+                }
+#endif
+                prefetch_range(state.node, 64);
                 // printf("%d  %d\n", N::isLeaf((N*)state.node), (int)nextNodeType);
-                // prefetch_range(state.node, N::node_sizes[(uint8_t)nextNodeType]);
                 // prefetch_range_times(state.node, N::node_prefetch[(uint8_t)nextNodeType]);
-                prefetch_range_times(state.node, 1);
+                // prefetch_range_times(state.node, 1);
 
+            } else if (state.stage == INSERT_SPIN) {
+                if (state.spin_rounds == 0)
+                    state.stage = INSERT_PROB;
+                state.spin_rounds--;
+                rstcnt++;
+            } else if (state.stage == READ_PREF_POS) {
+                NTypes nT = ((N*)state.node)->getType();
+                if (nT == NTypes::N48) {
+                    state.stage = READ_PROB;
+                    uint8_t idx = ((N48*)state.node)->getPosIdx(state.key->fkey[state.level]);
+                    prefetch_range((uint8_t*)state.node + 24 + 256 + idx * 8, 64);
+                }
+            } else if (state.stage == INSERT_PREF_POS) {
+                NTypes nT = ((N*)state.node)->getType();
+                if (nT == NTypes::N48) {
+                    state.stage = INSERT_PROB;
+                    uint8_t idx = ((N48*)state.nextNode)->getPosIdx(state.key->fkey[state.level]);
+                    prefetch_range((uint8_t*)state.nextNode + 24 + 256 + idx * 8, 64);
+                }
             } else if (state.stage == INSERT_PROB) {
                 //art_cout << "Inserting key " << k->fkey << std::endl;
-                // EpocheGuard epocheGuard(epocheInfo);
-                restart:
-
+                // restart:
+                std::function<void()> restart = [&state, this]() {
+                    state.stage       = INSERT_SPIN;
+                    // state.stage       = INSERT_PROB;
+                    state.level       = 0;
+                    // state.node_cached = false;
+                    state.spin_rounds = 0;
+                    state.needRestart = false;
+                    state.node        = nullptr;
+                    state.nextNode    = root;
+                    state.parentNode  = nullptr;
+                    state.parentKey   = 0; 
+                    state.nodeKey     = 0;
+                };
+                if (N::isLeaf((N*)state.nextNode)) {
+                    ((N*)state.node)->lockVersionOrRestart(state.v, state.needRestart);
+                    if (state.needRestart) {restart(); continue;};
+                    Key *key;
+                    key = N::getLeaf((N*)state.nextNode);
+                    state.level++;
+                    assert(state.level-1 < key->getKeyLen()); //prevent inserting when prefix of key exists already
+                    uint32_t prefixLength = 0;
+                    while (key->fkey[state.level-1 + prefixLength] == state.key->fkey[state.level-1 + prefixLength]) {
+                        prefixLength++;
+                    }
+                    auto n4 = new N4(state.level-1 + prefixLength, &state.key->fkey[state.level-1], prefixLength);
+                    n4->insert(state.key->fkey[state.level-1 + prefixLength], N::setLeaf(state.key), false);
+                    n4->insert(key->fkey[state.level-1 + prefixLength], (N*)state.nextNode, false);
+                    N::clflush((char *)n4, sizeof(N4), true, true);
+                    N::change((N*)state.node, state.key->fkey[state.level-1 - 1], n4);
+                    ((N*)state.node)->writeUnlock();
+                    {return_insert(state, num_finished, y); continue;}
+                } 
                 state.parentNode = state.node;
                 state.parentKey = state.nodeKey;
                 state.node = state.nextNode;
-                auto v = ((N*)state.node)->getVersion();
+                state.v = ((N*)state.node)->getVersion();
                 uint32_t nextLevel = state.level;
                 uint8_t nonMatchingKey;
                 Prefix remainingPrefix;
+                // printf("%llx\n", state.node);
                 switch (checkPrefixPessimistic((N*)state.node, state.key, nextLevel, nonMatchingKey, remainingPrefix,
                                                             this->loadKey)) { // increases level
                     case CheckPrefixPessimisticResult::SkippedLevel:
-                        goto restart;
+                        {restart(); continue;}
+
                     case CheckPrefixPessimisticResult::NoMatch: {
                         assert(nextLevel < state.key->getKeyLen()); //prevent duplicate key
-                        ((N*)state.node)->lockVersionOrRestart(v, state.needRestart);
-                        if (state.needRestart) goto restart;
+                        ((N*)state.node)->lockVersionOrRestart(state.v, state.needRestart);
+                        if (state.needRestart) {restart(); continue;}
                         // 1) Create new node which will be parent of node, Set common prefix, level to this node
                         Prefix prefi = ((N*)state.node)->getPrefi();
                         prefi.prefixCount = nextLevel - state.level;
@@ -279,7 +396,7 @@ namespace ART_ROWEX {
                         if (state.needRestart) {
                             delete newNode;
                             ((N*)state.node)->writeUnlock();
-                            goto restart;
+                            {restart(); continue;}
                         }
                         N::change((N*)state.parentNode, state.parentKey, newNode);
                         ((N*)state.parentNode)->writeUnlock();
@@ -288,7 +405,7 @@ namespace ART_ROWEX {
                         ((N*)state.node)->setPrefix(remainingPrefix.prefix,
                                     ((N*)state.node)->getPrefi().prefixCount - ((nextLevel - state.level) + 1), true);
                         ((N*)state.node)->writeUnlock();
-                        return;
+                        {return_insert(state, num_finished, y); continue;}
             
                     } // end case  NoMatch
                     case CheckPrefixPessimisticResult::Match:
@@ -299,40 +416,54 @@ namespace ART_ROWEX {
                 state.nodeKey = state.key->fkey[state.level];
                 state.nextNode = N::getChild(state.nodeKey, (N*)state.node);
 #ifdef AMAC_DYNAMIC
+                NTypes nextNodeType = N::getNodeType((N*)state.node);
+
                 state.nextNode = N::getNode((N*)state.nextNode);
 #endif
-                if (state.nextNode == nullptr) {
-                    ((N*)state.node)->lockVersionOrRestart(v, state.needRestart);
-                    if (state.needRestart) goto restart;
+                if (state.nextNode == NULL) {
+                    ((N*)state.node)->lockVersionOrRestart(state.v, state.needRestart);
+                    if (state.needRestart) {restart(); continue;}
                     N::insertAndUnlock((N*)state.node, (N*)state.parentNode, state.parentKey, 
                         state.nodeKey, N::setLeaf(state.key), threadEpocheInfo, state.needRestart);
-                    if (state.needRestart) goto restart;
-                        return;
+                    if (state.needRestart) {restart(); continue;}
+                    {return_insert(state, num_finished, y); continue;}
+
                 }
-                if (N::isLeaf((N*)state.nextNode)) {
-                    ((N*)state.node)->lockVersionOrRestart(v, state.needRestart);
-                    if (state.needRestart) goto restart;
-                    Key *key;
-                    key = N::getLeaf((N*)state.nextNode);
-                    state.level++;
-                    assert(state.level < key->getKeyLen()); //prevent inserting when prefix of key exists already
-                    uint32_t prefixLength = 0;
-                    while (key->fkey[state.level + prefixLength] == state.key->fkey[state.level + prefixLength]) {
-                        prefixLength++;
-                    }
-                    auto n4 = new N4(state.id + prefixLength, &state.key->fkey[state.level], prefixLength);
-                    n4->insert(state.key->fkey[state.level + prefixLength], N::setLeaf(state.key), false);
-                    n4->insert(key->fkey[state.level + prefixLength], (N*)state.nextNode, false);
-                    N::clflush((char *)n4, sizeof(N4), true, true);
-                    N::change((N*)state.node, state.key->fkey[state.level - 1], n4);
-                    ((N*)state.node)->writeUnlock();
-                    return;
-                }
+                // if (N::isLeaf((N*)state.nextNode)) {
+                //     ((N*)state.node)->lockVersionOrRestart(v, state.needRestart);
+                //     if (state.needRestart) {restart(); continue;};
+                //     Key *key;
+                //     key = N::getLeaf((N*)state.nextNode);
+                //     state.level++;
+                //     assert(state.level < key->getKeyLen()); //prevent inserting when prefix of key exists already
+                //     uint32_t prefixLength = 0;
+                //     while (key->fkey[state.level + prefixLength] == state.key->fkey[state.level + prefixLength]) {
+                //         prefixLength++;
+                //     }
+                //     auto n4 = new N4(state.level + prefixLength, &state.key->fkey[state.level], prefixLength);
+                //     n4->insert(state.key->fkey[state.level + prefixLength], N::setLeaf(state.key), false);
+                //     n4->insert(key->fkey[state.level + prefixLength], (N*)state.nextNode, false);
+                //     N::clflush((char *)n4, sizeof(N4), true, true);
+                //     N::change((N*)state.node, state.key->fkey[state.level - 1], n4);
+                //     ((N*)state.node)->writeUnlock();
+                //     {return_insert(state, num_finished, y); continue;}
+                // }                
                 state.level++;
+#ifdef AMAC_DYNAMIC
+                if (nextNodeType == NTypes::N256) {
+                    prefetch_range((uint8_t*)state.nextNode + 24 + 8 * state.key->fkey[state.level], 64);
+                } else if (nextNodeType == NTypes::N48) {
+                    prefetch_range((uint8_t*)state.nextNode + 24 + state.key->fkey[state.level], 64);
+                    state.stage = READ_PREF_POS;
+                } else if (nextNodeType == NTypes::N16) {
+                    // state.stage = READ_PREF_POS;
+                }
+#endif
+                prefetch_range(state.nextNode, 64);
             
             }
         }
-
+        return rstcnt;
     }
     
     bool Tree::lookupRange(const Key *start, const Key *end, const Key *continueKey, Key *result[],
@@ -521,10 +652,17 @@ namespace ART_ROWEX {
         return NULL;
     }
     
-    void Tree::insert(const Key *k, ThreadInfo &epocheInfo) {
+    uint64_t Tree::insert(const Key *k, ThreadInfo &epocheInfo) {
 	//art_cout << "Inserting key " << k->fkey << std::endl;
         EpocheGuard epocheGuard(epocheInfo);
+        int rstcnt=0,rlevel,red=0;
         restart:
+        rstcnt++;
+        // if(rct > 100){
+        //     red=1;
+        //     printf("mutiple restart at level %d\n", rlevel);
+        //     // exit(0);
+        // }
         // restart_cnt++;
         bool needRestart = false;
 	//art_cout << __func__ << "Start/Restarting insert.." << std::endl;
@@ -539,8 +677,10 @@ namespace ART_ROWEX {
             parentKey = nodeKey;
             node = nextNode;
             auto v = node->getVersion();
-            node->writeLockOrRestart(needRestart);
-            if (needRestart) goto restart;
+            rlevel = level;
+            // node->writeLockOrRestart(needRestart);
+            // if (needRestart) goto restart;
+            
             uint32_t nextLevel = level;
 
             uint8_t nonMatchingKey;
@@ -578,7 +718,7 @@ namespace ART_ROWEX {
                     node->setPrefix(remainingPrefix.prefix,
                                 node->getPrefi().prefixCount - ((nextLevel - level) + 1), true);
                     node->writeUnlock();
-                    return;
+                    return rstcnt;
 		
                 } // end case  NoMatch
                 case CheckPrefixPessimisticResult::Match:
@@ -593,18 +733,18 @@ namespace ART_ROWEX {
 #endif            
             
 	        if (nextNode == NULL) {
-                // node->lockVersionOrRestart(v, needRestart);
-                node->writeLockOrRestart(needRestart);
+                node->lockVersionOrRestart(v, needRestart);
+                // node->writeLockOrRestart(needRestart);
                 if (needRestart) goto restart;
 
                 N::insertAndUnlock(node, parentNode, parentKey, nodeKey, N::setLeaf(k), epocheInfo, needRestart);
                 if (needRestart) goto restart;
-                return;
+                return rstcnt;
             } 
             if (N::isLeaf(nextNode)) {
                 // printf("isleaf\n");
-                // node->lockVersionOrRestart(v, needRestart);
-                node->writeLockOrRestart(needRestart);
+                node->lockVersionOrRestart(v, needRestart);
+                // node->writeLockOrRestart(needRestart);
                 if (needRestart) goto restart;
 		        Key *key;
                 key = N::getLeaf(nextNode);
@@ -622,10 +762,12 @@ namespace ART_ROWEX {
 
                 N::change(node, k->fkey[level - 1], n4);
                 node->writeUnlock();
-                return;
+                return rstcnt;
             }
+            // node->writeUnlock();
             level++;
         }
+        return rstcnt;
     }
 
     void Tree::remove(const Key *k, ThreadInfo &threadInfo) {

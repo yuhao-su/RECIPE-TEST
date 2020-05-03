@@ -17,7 +17,7 @@ extern "C" {
 #define NODE256 4
 
 #define MAX_PREFIX_LEN 8
-#define PARALLEL_THRESHOLD 10240000
+#define PARALLEL_THRESHOLD 1024
 
 #define CART_ZIPF
 #ifndef CART_ZIPF

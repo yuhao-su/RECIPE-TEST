@@ -82,6 +82,10 @@ namespace ART_ROWEX {
         }
     }
 
+    uint8_t N48::getPosIdx(const uint8_t k) const {
+        return childIndex[k].load();
+    }
+
     bool N48::remove(uint8_t k, bool force, bool flush) {
         if (count <= 12 && !force) {
             return false;

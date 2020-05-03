@@ -161,10 +161,10 @@ class KeyExtractor {
 /////////////////////////////////////////////////////////////////////////////////
 
 uint32_t num_thread = 0;
-uint64_t cart_read_batch_size = 0;
-static uint64_t LOAD_SIZE = 50000;//16000000;
-static uint64_t RUN_SIZE = 10000000;//16000000;
-static uint64_t CART_READ_BATCH_SIZE;
+uint64_t cart_read_batch_size = 100000;
+static uint64_t LOAD_SIZE = 16000000;//16000000;
+static uint64_t RUN_SIZE = 16000000;//16000000;
+static uint64_t CART_READ_BATCH_SIZE = cart_read_batch_size;
 // int a =0xfffff;
 static const uint64_t CART_WRITE_BATCH_SIZE = 0xffff;
 
@@ -489,33 +489,39 @@ void ycsb_load_run_randint(int index_type, int wl, int kt, int ap, int num_threa
 
         {
             // Load
+            Key **key = new Key*[LOAD_SIZE];
+            uint64_t rstcnt = 0;
+
+            tbb::parallel_for(tbb::blocked_range<uint64_t>(0, LOAD_SIZE), [&](const tbb::blocked_range<uint64_t> &scope) {
+                for (uint64_t i = scope.begin(); i != scope.end(); i++) {
+                    key[i] = key[i]->make_leaf(init_keys[i], sizeof(uint64_t), init_keys[i]);
+                }
+            });
             tree.restart_cnt = 0;
             auto starttime = std::chrono::system_clock::now();
-#ifdef MULTI_THREAD
+
             tbb::parallel_for(tbb::blocked_range<uint64_t>(0, LOAD_SIZE), [&](const tbb::blocked_range<uint64_t> &scope) {
                 auto t = tree.getThreadInfo();
                 for (uint64_t i = scope.begin(); i != scope.end(); i++) {
-                    Key *key = key->make_leaf(init_keys[i], sizeof(uint64_t), init_keys[i]);
-                    tree.insert(key, t);
+                    tree.insert(key[i], t);
                 }
             });
-#else        
-            auto t = tree.getThreadInfo();
-            for (uint64_t i = 0; i != LOAD_SIZE; i++) {
-                Key *key = key->make_leaf(init_keys[i], sizeof(uint64_t), init_keys[i]);
-                tree.insert(key, t);
-            }
-#endif          
+            
+            // #pragma omp parallel for num_threads(num_thread) reduction(+:rstcnt)
+            //     for (uint64_t i = 0; i < LOAD_SIZE; i++) {
+            //         auto t = tree.getThreadInfo();
+            //         rstcnt += tree.insert(key[i], t);
+            //     }
             auto duration = std::chrono::duration_cast<std::chrono::microseconds>(
                     std::chrono::system_clock::now() - starttime);
             printf("Throughput: load, %f ,ops/us\n", (LOAD_SIZE * 1.0) / duration.count());
-            std::cout<<"Restart Count, load "<<tree.restart_cnt<<std::endl;
+            std::cout<<"Restart Count, load "<<rstcnt - LOAD_SIZE<<std::endl;
         }
         sleep(1);
         Key **key = new Key*[RUN_SIZE];
         tbb::parallel_for(tbb::blocked_range<uint64_t>(0, RUN_SIZE), [&](const tbb::blocked_range<uint64_t> &scope) {
             for (uint64_t i = scope.begin(); i != scope.end(); i++) {
-                key[i] = key[i]->make_leaf(init_keys[i % LOAD_SIZE], sizeof(uint64_t), 0);
+                key[i] = key[i]->make_leaf(keys[i % LOAD_SIZE], sizeof(uint64_t), 0);
             }
         });
 
@@ -524,17 +530,17 @@ void ycsb_load_run_randint(int index_type, int wl, int kt, int ap, int num_threa
             tree.restart_cnt = 0;
             Key *end = end->make_leaf(UINT64_MAX, sizeof(uint64_t), 0);
             auto starttime = std::chrono::system_clock::now();
-#ifdef MULTI_THREAD
+
             tbb::parallel_for(tbb::blocked_range<uint64_t>(0, RUN_SIZE), [&](const tbb::blocked_range<uint64_t> &scope) {
                 auto t = tree.getThreadInfo();
                 for (uint64_t i = scope.begin(); i != scope.end(); i++) {
                     if (ops[i] == OP_INSERT) {
-                        Key *key = key->make_leaf(keys[i], sizeof(uint64_t), keys[i]);
-                        tree.insert(key, t);
+                        // Key *key = key->make_leaf(keys[i], sizeof(uint64_t), keys[i]);
+                        tree.insert(key[i%LOAD_SIZE], t);
                     } else if (ops[i] == OP_READ) {
                         // Key *key = key->make_leaf(init_keys[i], sizeof(uint64_t), 0);
                         uint64_t *val = reinterpret_cast<uint64_t *>(tree.lookup(key[i%LOAD_SIZE], t));
-                        if (*val != init_keys[i%LOAD_SIZE]) {
+                        if (*val != keys[i%LOAD_SIZE]) {
                             std::cout << "[ART] wrong key read: " << val << " expected:" << keys[i] << std::endl;
                             exit(1);
                         }
@@ -548,29 +554,7 @@ void ycsb_load_run_randint(int index_type, int wl, int kt, int ap, int num_threa
                     }
                 }
             });
-#else
-            auto t = tree.getThreadInfo();
-            for (uint64_t i = 0; i != LOAD_SIZE; i++) {
-                if (ops[i] == OP_INSERT) {
-                    Key *key = key->make_leaf(keys[i], sizeof(uint64_t), keys[i]);
-                    tree.insert(key, t);
-                } else if (ops[i] == OP_READ) {
-                    Key *key = key->make_leaf(keys[i], sizeof(uint64_t), 0);
-                    uint64_t *val = reinterpret_cast<uint64_t *>(tree.lookup(key, t));
-                    // if (*val != keys[i]) {
-                    //     std::cout << "[ART] wrong key read: " << val << " expected:" << keys[i] << std::endl;
-                    //     exit(1);
-                    // }
-                } else if (ops[i] == OP_SCAN) {
-                    Key *results[200];
-                    Key *continueKey = NULL;
-                    size_t resultsFound = 0;
-                    size_t resultsSize = ranges[i];
-                    Key *start = start->make_leaf(keys[i], sizeof(uint64_t), 0);
-                    tree.lookupRange(start, end, continueKey, results, resultsSize, resultsFound, t);
-                }
-            }
-#endif           
+          
             auto duration = std::chrono::duration_cast<std::chrono::microseconds>(
                     std::chrono::system_clock::now() - starttime);
             printf("Throughput: run, %f ,ops/us\n", (RUN_SIZE * 1.0) / duration.count());
@@ -596,31 +580,48 @@ void ycsb_load_run_randint(int index_type, int wl, int kt, int ap, int num_threa
         ART_ROWEX::Tree tree(loadKey);
 
         {
-            // Load
-            tree.restart_cnt = 0;
-            auto starttime = std::chrono::system_clock::now();
+            Key **key = new Key*[LOAD_SIZE];
+            void **ret_val = NULL;
             tbb::parallel_for(tbb::blocked_range<uint64_t>(0, LOAD_SIZE), [&](const tbb::blocked_range<uint64_t> &scope) {
-                auto t = tree.getThreadInfo();
                 for (uint64_t i = scope.begin(); i != scope.end(); i++) {
-                    Key *key = key->make_leaf(init_keys[i], sizeof(uint64_t), init_keys[i]);
-                    tree.insert(key, t);
+                    key[i] = key[i]->make_leaf(init_keys[i], sizeof(uint64_t), init_keys[i]);
                 }
             });
-            
+            // Load
+            Key *end = end->make_leaf(UINT64_MAX, sizeof(uint64_t), 0);
+            uint32_t block_num = num_thread * 128;
+            uint32_t _block_size = LOAD_SIZE / block_num;
+            atomic<uint64_t> rstcnt = 0;
+            tree.restart_cnt = 0;
+            auto starttime = std::chrono::system_clock::now();
+            tbb::parallel_for(tbb::blocked_range<uint64_t>(0, block_num), [&](const tbb::blocked_range<uint64_t> &scope) {
+                auto t = tree.getThreadInfo();
+                for (uint64_t i = scope.begin(); i != scope.end(); i++) {
+                    uint32_t block_size = (i < block_num - 1) ? _block_size : LOAD_SIZE - i * _block_size;
+                    rstcnt+=tree.exec_acmc(key, ret_val, ops, 1, i * _block_size, block_size, t);
+                    // tree.insert(key, t);
+                }
+            });
+            // tbb::parallel_for(tbb::blocked_range<uint64_t>(0, LOAD_SIZE), [&](const tbb::blocked_range<uint64_t> &scope) {
+            //     auto t = tree.getThreadInfo();
+            //     for (uint64_t i = scope.begin(); i != scope.end(); i++) {
+            //         tree.insert(key[i], t);
+            //     }
+            // });
             auto duration = std::chrono::duration_cast<std::chrono::microseconds>(
                     std::chrono::system_clock::now() - starttime);
             printf("Throughput: load, %f ,ops/us\n", (LOAD_SIZE * 1.0) / duration.count());
-            std::cout<<"Restart Count, load "<<tree.restart_cnt<<std::endl;
+            std::cout<<"Restart Count, load "<<rstcnt<<std::endl;
         }
-        sleep(1);
-        Key **key = new Key*[RUN_SIZE];
         void **ret_val = new void*[RUN_SIZE];
-        tbb::parallel_for(tbb::blocked_range<uint64_t>(0, RUN_SIZE), [&](const tbb::blocked_range<uint64_t> &scope) {
-            for (uint64_t i = scope.begin(); i != scope.end(); i++) {
-                key[i] = key[i]->make_leaf(init_keys[i], sizeof(uint64_t), 0);
-            }
-        });
+        sleep(1);
         {
+            Key **key = new Key*[RUN_SIZE];
+            tbb::parallel_for(tbb::blocked_range<uint64_t>(0, RUN_SIZE), [&](const tbb::blocked_range<uint64_t> &scope) {
+                for (uint64_t i = scope.begin(); i != scope.end(); i++) {
+                    key[i] = key[i]->make_leaf(keys[i], sizeof(uint64_t), 0);
+                }
+            });
             // Run
             tree.restart_cnt = 0;
             Key *end = end->make_leaf(UINT64_MAX, sizeof(uint64_t), 0);
@@ -632,7 +633,7 @@ void ycsb_load_run_randint(int index_type, int wl, int kt, int ap, int num_threa
                 auto t = tree.getThreadInfo();
                 for (uint32_t i = scope.begin(); i != scope.end(); i++) {
                     uint32_t block_size = (i < block_num - 1) ? _block_size : RUN_SIZE - i * _block_size;
-                    tree.exec_acmc(key, ret_val, ops, i * _block_size, block_size, t);
+                    tree.exec_acmc(key, ret_val, ops, 0, i * _block_size, block_size, t);
                     // if (ops[i] == OP_INSERT) {
                     //     Key *key = key->make_leaf(keys[i], sizeof(uint64_t), keys[i]);
                     //     tree.insert(key, t);
@@ -661,15 +662,16 @@ void ycsb_load_run_randint(int index_type, int wl, int kt, int ap, int num_threa
         }
 
         for (int i = 0; i < RUN_SIZE; i++) {
+            if (ops[i] != OP_READ) continue;
             if (ret_val[i] == NULL) {
                 std::cout<<"key not found: "<<i<<endl;
-                exit(1);
+                // exit(1);
                 continue;
             }
-            if (*(uint64_t*)ret_val[i] != init_keys[i]) {
+            if (*(uint64_t*)ret_val[i] != keys[i]) {
                 std::cout<<i<<endl;
                 std::cout << "[ART] wrong key read: " << *(uint64_t*)ret_val[i] << " expected:" << keys[i] << std::endl;
-                exit(1);
+                // exit(1);
             }
         }
         tree.get_size();
@@ -1042,10 +1044,10 @@ int main(int argc, char **argv) {
 
     num_thread = atoi(argv[5]);
 
-    if (index_type == TYPE_CART) {
-        cart_read_batch_size = atoi(argv[6]);
-        CART_READ_BATCH_SIZE = cart_read_batch_size;
-    }
+    // if (index_type == TYPE_CART) {
+    //     cart_read_batch_size = atoi(argv[6]);
+    //     CART_READ_BATCH_SIZE = cart_read_batch_size;
+    // }
 
     if (index_type == TYPE_ART_ACMC || index_type == TYPE_ART) {
         LOAD_SIZE = atoi(argv[6]);

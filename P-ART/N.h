@@ -271,8 +271,8 @@ namespace ART_ROWEX {
 
         uint32_t getCount() const;
     };
-
     class N48 : public N {
+
         std::atomic<uint8_t> childIndex[256];
         std::atomic<N *> children[48];
     public:
@@ -298,6 +298,8 @@ namespace ART_ROWEX {
         void change(uint8_t key, N *val);
 
         N *getChild(const uint8_t k) const;
+
+        uint8_t getPosIdx(const uint8_t k) const;
 
         bool remove(uint8_t k, bool force, bool flush);
 

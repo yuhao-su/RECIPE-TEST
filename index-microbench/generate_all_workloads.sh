@@ -10,7 +10,7 @@
 #done
 
 KEY_TYPE=randint
-workload_path=workloads
+workload_path=workloads_zipf
 
 for WORKLOAD_TYPE in  a b c e ; do
   echo workload${WORKLOAD_TYPE} > workload_config.inp

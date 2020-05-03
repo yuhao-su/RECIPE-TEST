@@ -33,7 +33,7 @@ namespace ART_ROWEX {
 
         LoadKeyFunction loadKey;
 
-        HashTableUnsafe ht{256*256*256};
+        // HashTableUnsafe ht{256*256*256};
 
         Epoche epoche{256};
 
@@ -87,12 +87,12 @@ namespace ART_ROWEX {
 
         void *lookup(const Key *k, ThreadInfo &threadEpocheInfo);
 
-        void exec_acmc(Key **key, void** ret_val, std::vector<int> &ops, uint64_t offset, uint64_t len, ThreadInfo &threadEpocheInfo);
+        uint64_t exec_acmc(Key **key, void** ret_val, std::vector<int> &ops, bool load_stage, uint64_t offset, uint64_t len, ThreadInfo &threadEpocheInfo);
 
         bool lookupRange(const Key *start, const Key *end, const Key *continueKey, Key *result[], std::size_t resultLen,
                          std::size_t &resultCount, ThreadInfo &threadEpocheInfo) const;
 
-        void insert(const Key *k, ThreadInfo &epocheInfo);
+        uint64_t insert(const Key *k, ThreadInfo &epocheInfo);
 
         void remove(const Key *k, ThreadInfo &epocheInfo);
 

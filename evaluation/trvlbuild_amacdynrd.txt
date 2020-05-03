@@ -1,0 +1,235 @@
+*********ART_AMAC WORKLOAD_C UNIFORM*********
+---THREAD * 1 * 1---
+art_amac, workloadc, randint, uniform, threads 1, batch size 16000000
+Throughput: load, 4.128302 ,ops/us
+Restart Count, load 0
+Throughput: run, 6.364666 ,ops/us
+Restart Count, run 0
+---THREAD * 1 * 2---
+art_amac, workloadc, randint, uniform, threads 1, batch size 16000000
+Throughput: load, 4.149174 ,ops/us
+Restart Count, load 0
+Throughput: run, 6.581220 ,ops/us
+Restart Count, run 0
+---THREAD * 1 * 3---
+art_amac, workloadc, randint, uniform, threads 1, batch size 16000000
+Throughput: load, 4.138764 ,ops/us
+Restart Count, load 0
+Throughput: run, 6.563338 ,ops/us
+Restart Count, run 0
+---THREAD * 1 * 4---
+art_amac, workloadc, randint, uniform, threads 1, batch size 16000000
+Throughput: load, 4.144077 ,ops/us
+Restart Count, load 0
+Throughput: run, 6.540712 ,ops/us
+Restart Count, run 0
+
+
+---THREAD * 5 * 1---
+art_amac, workloadc, randint, uniform, threads 5, batch size 16000000
+Throughput: load, 11.373887 ,ops/us
+Restart Count, load 0
+Throughput: run, 19.754623 ,ops/us
+Restart Count, run 0
+---THREAD * 5 * 2---
+art_amac, workloadc, randint, uniform, threads 5, batch size 16000000
+Throughput: load, 11.420129 ,ops/us
+Restart Count, load 0
+Throughput: run, 18.396366 ,ops/us
+Restart Count, run 0
+---THREAD * 5 * 3---
+art_amac, workloadc, randint, uniform, threads 5, batch size 16000000
+Throughput: load, 11.584423 ,ops/us
+Restart Count, load 0
+Throughput: run, 16.021453 ,ops/us
+Restart Count, run 0
+---THREAD * 5 * 4---
+art_amac, workloadc, randint, uniform, threads 5, batch size 16000000
+Throughput: load, 11.526647 ,ops/us
+Restart Count, load 0
+Throughput: run, 17.742136 ,ops/us
+Restart Count, run 0
+
+
+---THREAD * 10 * 1---
+art_amac, workloadc, randint, uniform, threads 10, batch size 16000000
+Throughput: load, 27.040547 ,ops/us
+Restart Count, load 0
+Throughput: run, 41.196024 ,ops/us
+Restart Count, run 0
+---THREAD * 10 * 2---
+art_amac, workloadc, randint, uniform, threads 10, batch size 16000000
+Throughput: load, 26.156741 ,ops/us
+Restart Count, load 0
+Throughput: run, 38.295835 ,ops/us
+Restart Count, run 0
+---THREAD * 10 * 3---
+art_amac, workloadc, randint, uniform, threads 10, batch size 16000000
+Throughput: load, 25.759420 ,ops/us
+Restart Count, load 0
+Throughput: run, 42.649379 ,ops/us
+Restart Count, run 0
+---THREAD * 10 * 4---
+art_amac, workloadc, randint, uniform, threads 10, batch size 16000000
+Throughput: load, 26.882759 ,ops/us
+Restart Count, load 0
+Throughput: run, 39.826754 ,ops/us
+Restart Count, run 0
+
+
+---THREAD * 15 * 1---
+art_amac, workloadc, randint, uniform, threads 15, batch size 16000000
+Throughput: load, 35.632839 ,ops/us
+Restart Count, load 0
+Throughput: run, 58.249175 ,ops/us
+Restart Count, run 0
+---THREAD * 15 * 2---
+art_amac, workloadc, randint, uniform, threads 15, batch size 16000000
+Throughput: load, 37.405376 ,ops/us
+Restart Count, load 0
+Throughput: run, 57.532848 ,ops/us
+Restart Count, run 0
+---THREAD * 15 * 3---
+art_amac, workloadc, randint, uniform, threads 15, batch size 16000000
+Throughput: load, 36.959781 ,ops/us
+Restart Count, load 0
+Throughput: run, 67.186240 ,ops/us
+Restart Count, run 0
+---THREAD * 15 * 4---
+art_amac, workloadc, randint, uniform, threads 15, batch size 16000000
+Throughput: load, 36.118931 ,ops/us
+Restart Count, load 0
+Throughput: run, 67.896729 ,ops/us
+Restart Count, run 0
+
+
+---THREAD * 20 * 1---
+art_amac, workloadc, randint, uniform, threads 20, batch size 16000000
+Throughput: load, 45.625512 ,ops/us
+Restart Count, load 0
+Throughput: run, 61.975388 ,ops/us
+Restart Count, run 0
+---THREAD * 20 * 2---
+art_amac, workloadc, randint, uniform, threads 20, batch size 16000000
+Throughput: load, 46.228078 ,ops/us
+Restart Count, load 0
+Throughput: run, 76.120518 ,ops/us
+Restart Count, run 0
+---THREAD * 20 * 3---
+art_amac, workloadc, randint, uniform, threads 20, batch size 16000000
+Throughput: load, 44.479534 ,ops/us
+Restart Count, load 0
+Throughput: run, 81.962594 ,ops/us
+Restart Count, run 0
+---THREAD * 20 * 4---
+art_amac, workloadc, randint, uniform, threads 20, batch size 16000000
+Throughput: load, 46.194044 ,ops/us
+Restart Count, load 0
+Throughput: run, 79.585756 ,ops/us
+Restart Count, run 0
+
+
+---THREAD * 25 * 1---
+art_amac, workloadc, randint, uniform, threads 25, batch size 16000000
+Throughput: load, 52.961368 ,ops/us
+Restart Count, load 0
+Throughput: run, 70.770156 ,ops/us
+Restart Count, run 0
+---THREAD * 25 * 2---
+art_amac, workloadc, randint, uniform, threads 25, batch size 16000000
+Throughput: load, 53.124907 ,ops/us
+Restart Count, load 0
+Throughput: run, 74.157845 ,ops/us
+Restart Count, run 0
+---THREAD * 25 * 3---
+art_amac, workloadc, randint, uniform, threads 25, batch size 16000000
+Throughput: load, 52.311173 ,ops/us
+Restart Count, load 0
+Throughput: run, 71.441648 ,ops/us
+Restart Count, run 0
+---THREAD * 25 * 4---
+art_amac, workloadc, randint, uniform, threads 25, batch size 16000000
+Throughput: load, 53.625233 ,ops/us
+Restart Count, load 0
+Throughput: run, 73.562880 ,ops/us
+Restart Count, run 0
+
+
+---THREAD * 30 * 1---
+art_amac, workloadc, randint, uniform, threads 30, batch size 16000000
+Throughput: load, 60.804828 ,ops/us
+Restart Count, load 0
+Throughput: run, 82.558914 ,ops/us
+Restart Count, run 0
+---THREAD * 30 * 2---
+art_amac, workloadc, randint, uniform, threads 30, batch size 16000000
+Throughput: load, 60.757033 ,ops/us
+Restart Count, load 0
+Throughput: run, 79.219294 ,ops/us
+Restart Count, run 0
+---THREAD * 30 * 3---
+art_amac, workloadc, randint, uniform, threads 30, batch size 16000000
+Throughput: load, 59.317918 ,ops/us
+Restart Count, load 0
+Throughput: run, 79.471909 ,ops/us
+Restart Count, run 0
+---THREAD * 30 * 4---
+art_amac, workloadc, randint, uniform, threads 30, batch size 16000000
+Throughput: load, 59.532669 ,ops/us
+Restart Count, load 0
+Throughput: run, 82.720256 ,ops/us
+Restart Count, run 0
+
+
+---THREAD * 35 * 1---
+art_amac, workloadc, randint, uniform, threads 35, batch size 16000000
+Throughput: load, 64.512747 ,ops/us
+Restart Count, load 0
+Throughput: run, 88.568076 ,ops/us
+Restart Count, run 0
+---THREAD * 35 * 2---
+art_amac, workloadc, randint, uniform, threads 35, batch size 16000000
+Throughput: load, 67.192448 ,ops/us
+Restart Count, load 0
+Throughput: run, 88.392906 ,ops/us
+Restart Count, run 0
+---THREAD * 35 * 3---
+art_amac, workloadc, randint, uniform, threads 35, batch size 16000000
+Throughput: load, 64.495064 ,ops/us
+Restart Count, load 0
+Throughput: run, 90.570994 ,ops/us
+Restart Count, run 0
+---THREAD * 35 * 4---
+art_amac, workloadc, randint, uniform, threads 35, batch size 16000000
+Throughput: load, 66.936084 ,ops/us
+Restart Count, load 0
+Throughput: run, 84.347702 ,ops/us
+Restart Count, run 0
+
+
+---THREAD * 40 * 1---
+art_amac, workloadc, randint, uniform, threads 40, batch size 16000000
+Throughput: load, 69.380304 ,ops/us
+Restart Count, load 0
+Throughput: run, 88.260766 ,ops/us
+Restart Count, run 0
+---THREAD * 40 * 2---
+art_amac, workloadc, randint, uniform, threads 40, batch size 16000000
+Throughput: load, 70.472784 ,ops/us
+Restart Count, load 0
+Throughput: run, 97.919217 ,ops/us
+Restart Count, run 0
+---THREAD * 40 * 3---
+art_amac, workloadc, randint, uniform, threads 40, batch size 16000000
+Throughput: load, 62.190747 ,ops/us
+Restart Count, load 0
+Throughput: run, 85.710918 ,ops/us
+Restart Count, run 0
+---THREAD * 40 * 4---
+art_amac, workloadc, randint, uniform, threads 40, batch size 16000000
+Throughput: load, 66.596463 ,ops/us
+Restart Count, load 0
+Throughput: run, 88.712450 ,ops/us
+Restart Count, run 0
+
+
