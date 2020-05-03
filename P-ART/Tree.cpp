@@ -459,7 +459,7 @@ namespace ART_ROWEX {
                     // state.stage = READ_PREF_POS;
                 }
 #endif
-                prefetch_range(state.nextNode, 64);
+                // prefetch_range(state.nextNode, 64);
             
             }
         }
@@ -767,7 +767,7 @@ namespace ART_ROWEX {
             // node->writeUnlock();
             level++;
         }
-        return rstcnt;
+        return rstcnt-1;
     }
 
     void Tree::remove(const Key *k, ThreadInfo &threadInfo) {

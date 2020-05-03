@@ -515,7 +515,7 @@ void ycsb_load_run_randint(int index_type, int wl, int kt, int ap, int num_threa
             auto duration = std::chrono::duration_cast<std::chrono::microseconds>(
                     std::chrono::system_clock::now() - starttime);
             printf("Throughput: load, %f ,ops/us\n", (LOAD_SIZE * 1.0) / duration.count());
-            std::cout<<"Restart Count, load "<<rstcnt - LOAD_SIZE<<std::endl;
+            std::cout<<"Restart Count, load "<<rstcnt<<std::endl;
         }
         sleep(1);
         Key **key = new Key*[RUN_SIZE];
@@ -528,6 +528,7 @@ void ycsb_load_run_randint(int index_type, int wl, int kt, int ap, int num_threa
         {
             // Run
             tree.restart_cnt = 0;
+            uint64_t rstcnt = 0;
             Key *end = end->make_leaf(UINT64_MAX, sizeof(uint64_t), 0);
             auto starttime = std::chrono::system_clock::now();
 
@@ -554,11 +555,32 @@ void ycsb_load_run_randint(int index_type, int wl, int kt, int ap, int num_threa
                     }
                 }
             });
-          
+            // #pragma omp parallel for num_threads(num_thread) reduction(+:rstcnt)
+            //     for (uint64_t i = 0; i < RUN_SIZE; i++) {
+            //         auto t = tree.getThreadInfo();
+            //         if (ops[i] == OP_INSERT) {
+            //             // Key *key = key->make_leaf(keys[i], sizeof(uint64_t), keys[i]);
+            //             rstcnt += tree.insert(key[i%LOAD_SIZE], t);
+            //         } else if (ops[i] == OP_READ) {
+            //             // Key *key = key->make_leaf(init_keys[i], sizeof(uint64_t), 0);
+            //             uint64_t *val = reinterpret_cast<uint64_t *>(tree.lookup(key[i%LOAD_SIZE], t));
+            //             if (*val != keys[i%LOAD_SIZE]) {
+            //                 std::cout << "[ART] wrong key read: " << val << " expected:" << keys[i] << std::endl;
+            //                 exit(1);
+            //             }
+            //         } else if (ops[i] == OP_SCAN) {
+            //             Key *results[200];
+            //             Key *continueKey = NULL;
+            //             size_t resultsFound = 0;
+            //             size_t resultsSize = ranges[i];
+            //             Key *start = start->make_leaf(keys[i], sizeof(uint64_t), 0);
+            //             tree.lookupRange(start, end, continueKey, results, resultsSize, resultsFound, t);
+            //         }
+            //     }
             auto duration = std::chrono::duration_cast<std::chrono::microseconds>(
                     std::chrono::system_clock::now() - starttime);
             printf("Throughput: run, %f ,ops/us\n", (RUN_SIZE * 1.0) / duration.count());
-            std::cout<<"Restart Count, run "<<tree.restart_cnt<<std::endl;
+            std::cout<<"Restart Count, run "<<rstcnt<<std::endl;
         }
         tree.get_size();
         std::cout<<"Node Size Total: "<<tree.leaf_num * 36
@@ -627,38 +649,22 @@ void ycsb_load_run_randint(int index_type, int wl, int kt, int ap, int num_threa
             Key *end = end->make_leaf(UINT64_MAX, sizeof(uint64_t), 0);
             uint32_t block_num = num_thread * 128;
             uint32_t _block_size = RUN_SIZE / block_num;
+            atomic<uint64_t> rstcnt = 0;
             auto starttime = std::chrono::system_clock::now();
             tbb::parallel_for(tbb::blocked_range<uint32_t>(0, block_num), [&](const tbb::blocked_range<uint32_t> &scope) {
 
                 auto t = tree.getThreadInfo();
                 for (uint32_t i = scope.begin(); i != scope.end(); i++) {
                     uint32_t block_size = (i < block_num - 1) ? _block_size : RUN_SIZE - i * _block_size;
-                    tree.exec_acmc(key, ret_val, ops, 0, i * _block_size, block_size, t);
-                    // if (ops[i] == OP_INSERT) {
-                    //     Key *key = key->make_leaf(keys[i], sizeof(uint64_t), keys[i]);
-                    //     tree.insert(key, t);
-                    // } else if (ops[i] == OP_READ) {
-                    //     // Key *key = key->make_leaf(init_keys[i], sizeof(uint64_t), 0);
-                    //     uint64_t *val = reinterpret_cast<uint64_t *>(tree.lookup(key[i], t));
-                    //     if (*val != init_keys[i]) {
-                    //         std::cout << "[ART] wrong key read: " << val << " expected:" << keys[i] << std::endl;
-                    //         exit(1);
-                    //     }
-                    // } else if (ops[i] == OP_SCAN) {
-                    //     Key *results[200];
-                    //     Key *continueKey = NULL;
-                    //     size_t resultsFound = 0;
-                    //     size_t resultsSize = ranges[i];
-                    //     Key *start = start->make_leaf(keys[i], sizeof(uint64_t), 0);
-                    //     tree.lookupRange(start, end, continueKey, results, resultsSize, resultsFound, t);
-                    // }
+                    rstcnt += tree.exec_acmc(key, ret_val, ops, 0, i * _block_size, block_size, t);
+                 
                 }
             });
 
             auto duration = std::chrono::duration_cast<std::chrono::microseconds>(
                     std::chrono::system_clock::now() - starttime);
             printf("Throughput: run, %f ,ops/us\n", (RUN_SIZE * 1.0) / duration.count());
-            std::cout<<"Restart Count, run "<<tree.restart_cnt<<std::endl;
+            std::cout<<"Restart Count, run "<<rstcnt<<std::endl;
         }
 
         for (int i = 0; i < RUN_SIZE; i++) {
